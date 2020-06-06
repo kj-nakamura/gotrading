@@ -1,0 +1,4 @@
+config.ini
+*.sql
+*.log
+.idea/
