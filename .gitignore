@@ -2,3 +2,6 @@ config.ini
 *.sql
 *.log
 .idea/
+gotrading
+main
+.vscode/
