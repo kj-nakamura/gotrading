@@ -1,13 +1,14 @@
 package controllers
 
 import (
-	"github.com/markcheno/go-talib"
 	"gotrading/config"
 	"gotrading/tradingalgo"
 	"log"
 	"math"
 	"strings"
 	"time"
+
+	"github.com/markcheno/go-talib"
 
 	"golang.org/x/sync/semaphore"
 
@@ -69,7 +70,10 @@ func NewAI(productCode string, duration time.Duration, pastPeriod int, UsePercen
 }
 
 func (ai *AI) UpdateOptimizeParams(isContinue bool) {
-	df, _ := models.GetAllCandle(ai.ProductCode, ai.Duration, ai.PastPeriod)
+	df, err := models.GetAllCandle(ai.ProductCode, ai.Duration, ai.PastPeriod)
+	if err != nil {
+		return
+	}
 	ai.OptimizedTradeParams = df.OptimizeParams()
 	log.Printf("optimized_trade_params=%+v", ai.OptimizedTradeParams)
 	if ai.OptimizedTradeParams == nil && isContinue && !ai.BackTest {
@@ -101,12 +105,12 @@ func (ai *AI) Buy(candle models.Candle) (childOrderAcceptanceID string, isOrderC
 	size = ai.AdjustSize(size)
 
 	order := &bitflyer.Order{
-		ProductCode: ai.ProductCode,
-		ChildOrderType: "MARKET",
-		Side: "BUY",
-		Size: size,
+		ProductCode:     ai.ProductCode,
+		ChildOrderType:  "MARKET",
+		Side:            "BUY",
+		Size:            size,
 		MinuteToExpires: ai.MinuteToExpires,
-		TimeInForce: "GTC",
+		TimeInForce:     "GTC",
 	}
 	log.Print("status=order candle=%+v order=%+v", candle, order)
 	resp, err := ai.API.SendOrder(order)
@@ -140,12 +144,12 @@ func (ai *AI) Sell(candle models.Candle) (childOrderAcceptanceID string, isOrder
 	size := ai.AdjustSize(availableCoin)
 
 	order := &bitflyer.Order{
-		ProductCode: ai.ProductCode,
-		ChildOrderType: "MARKET",
-		Side: "SELL",
-		Size: size,
+		ProductCode:     ai.ProductCode,
+		ChildOrderType:  "MARKET",
+		Side:            "SELL",
+		Size:            size,
 		MinuteToExpires: ai.MinuteToExpires,
-		TimeInForce: "GTC",
+		TimeInForce:     "GTC",
 	}
 	log.Print("status=order candle=%+v order=%+v", candle, order)
 	resp, err := ai.API.SendOrder(order)
@@ -164,17 +168,20 @@ func (ai *AI) Sell(candle models.Candle) (childOrderAcceptanceID string, isOrder
 	return childOrderAcceptanceID, isOrderCompleted
 }
 
-func (ai *AI) Trade () {
+// Trade is トレードを開始する
+func (ai *AI) Trade() {
 	isAcquire := ai.TradeSemaphore.TryAcquire(1)
 	if !isAcquire {
 		log.Println("Could not get trade lock")
 		return
 	}
 	defer ai.TradeSemaphore.Release(1)
+
 	params := ai.OptimizedTradeParams
-	if params != nil {
+	if params == nil {
 		return
 	}
+
 	df, _ := models.GetAllCandle(ai.ProductCode, ai.Duration, ai.PastPeriod)
 	lenCandles := len(df.Candles)
 
@@ -206,6 +213,7 @@ func (ai *AI) Trade () {
 		rsiValues = talib.Rsi(df.Closes(), params.RsiPeriod)
 	}
 
+	// トレードのアルゴリズム
 	for i := 1; i < lenCandles; i++ {
 		buyPoint, sellPoint := 0, 0
 		if params.EmaEnable && params.EmaPeriod1 <= i && params.EmaPeriod2 <= i {
@@ -296,15 +304,15 @@ func (ai *AI) GetAvailableBalance() (availableCurrency, availableCoin float64) {
 	return availableCurrency, availableCoin
 }
 
-func (ai *AI) AdjustSize (size float64) float64 {
+func (ai *AI) AdjustSize(size float64) float64 {
 	fee := size * ApiFeePercent
 	size = size - fee
-	return math.Floor(size*10000)/10000
+	return math.Floor(size*10000) / 10000
 }
 
 func (ai *AI) WaitUntilOrderComplete(childOrderAcceptanceID string, executeTime time.Time) bool {
 	params := map[string]string{
-		"product_code": ai.ProductCode,
+		"product_code":              ai.ProductCode,
 		"child_order_acceptance_id": childOrderAcceptanceID,
 	}
 	expire := time.After(time.Minute + (20 * time.Second))
@@ -312,9 +320,9 @@ func (ai *AI) WaitUntilOrderComplete(childOrderAcceptanceID string, executeTime 
 	return func() bool {
 		for {
 			select {
-			case <- expire:
+			case <-expire:
 				return false
-			case <- interval:
+			case <-interval:
 				listOrders, err := ai.API.ListOrder(params)
 				if err != nil {
 					return false
@@ -323,7 +331,7 @@ func (ai *AI) WaitUntilOrderComplete(childOrderAcceptanceID string, executeTime 
 					return false
 				}
 				order := listOrders[0]
-				if order.ChildOrderState == "COMPLETED"{
+				if order.ChildOrderState == "COMPLETED" {
 					if order.Side == "BUY" {
 						couldBuy := ai.SignalEvents.Buy(ai.ProductCode, executeTime, order.AveragePrice, order.Size, true)
 						if !couldBuy {

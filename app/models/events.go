@@ -2,10 +2,7 @@ package models
 
 import (
 	"encoding/json"
-	"fmt"
 	"gotrading/config"
-	"log"
-	"strings"
 	"time"
 )
 
@@ -18,15 +15,13 @@ type SignalEvent struct {
 }
 
 func (s *SignalEvent) Save() bool {
-	cmd := fmt.Sprintf("INSERT INTO %s (time, product_code, side, price, size) VALUES (?, ?, ?, ?, ?)", tableNameSignalEvents)
-	_, err := DbConnection.Exec(cmd, s.Time.Format(time.RFC3339), s.ProductCode, s.Side, s.Price, s.Size)
-	if err != nil {
-		if strings.Contains(err.Error(), "UNIQUE constraint failed") {
-			log.Println(err)
-			return true
-		}
-		return false
-	}
+	DbConnection.Table(tableNameSignalEvents).Update(map[string]interface{}{
+		"Time":         s.Time,
+		"product_code": s.ProductCode,
+		"Side":         s.Side,
+		"Price":        s.Price,
+		"Size":         s.Size,
+	})
 	return true
 }
 
@@ -39,10 +34,8 @@ func NewSignalEvents() *SignalEvents {
 }
 
 func GetSignalEventsByCount(loadEvents int) *SignalEvents {
-	cmd := fmt.Sprintf(`SELECT * FROM (
-        SELECT time, product_code, side, price, size FROM %s WHERE product_code = ? ORDER BY time DESC LIMIT ? )
-        ORDER BY time ASC;`, tableNameSignalEvents)
-	rows, err := DbConnection.Query(cmd, config.Config.ProductCode, loadEvents)
+	rows, err := DbConnection.Table(tableNameSignalEvents).Select([]string{"Time", "ProductCode", "Side", "Price", "Size"}).Where("ProductCode = ?", config.Config.ProductCode).Order("time desc").Limit(loadEvents).Order("time asc").Rows()
+
 	if err != nil {
 		return nil
 	}
@@ -62,12 +55,7 @@ func GetSignalEventsByCount(loadEvents int) *SignalEvents {
 }
 
 func GetSignalEventsAfterTime(timeTime time.Time) *SignalEvents {
-	cmd := fmt.Sprintf(`SELECT * FROM (
-                SELECT time, product_code, side, price, size FROM %s
-                WHERE DATETIME(time) >= DATETIME(?)
-                ORDER BY time DESC
-            ) ORDER BY time ASC;`, tableNameSignalEvents)
-	rows, err := DbConnection.Query(cmd, timeTime.Format(time.RFC3339))
+	rows, err := DbConnection.Find(tableNameSignalEvents).Select([]string{"Time", "ProductCode", "Side", "Price", "Size"}).Where("time >= ?", timeTime).Order("time desc").Rows()
 	if err != nil {
 		return nil
 	}
@@ -82,42 +70,45 @@ func GetSignalEventsAfterTime(timeTime time.Time) *SignalEvents {
 	return &signalEvents
 }
 
-func (s *SignalEvents) CanBuy (time time.Time) bool {
+// CanBuy is 最初の売買か売ったあとの売買のみtrue
+func (s *SignalEvents) CanBuy(time time.Time) bool {
 	lenSignals := len(s.Signals)
 	if lenSignals == 0 {
 		return true
 	}
 
 	lastSignal := s.Signals[lenSignals-1]
-	if lastSignal.Side == "SELL" && lastSignal.Time.Before(time){
+	if lastSignal.Side == "SELL" && lastSignal.Time.Before(time) {
 		return true
 	}
 	return false
 }
 
-func (s *SignalEvents) CanSell (time time.Time) bool {
+// CanSell is 最初の売買か買ったあとの売買のみtrue
+func (s *SignalEvents) CanSell(time time.Time) bool {
 	lenSignals := len(s.Signals)
 	if lenSignals == 0 {
 		return true
 	}
 
 	lastSignal := s.Signals[lenSignals-1]
-	if lastSignal.Side == "BUY" && lastSignal.Time.Before(time){
+	if lastSignal.Side == "BUY" && lastSignal.Time.Before(time) {
 		return true
 	}
 	return false
 }
 
+// Buy is 購入シグナルをデータ保存
 func (s *SignalEvents) Buy(ProductCode string, time time.Time, price, size float64, save bool) bool {
-	if !s.CanBuy(time){
+	if !s.CanBuy(time) {
 		return false
 	}
 	signalEvent := SignalEvent{
+		Time:        time,
 		ProductCode: ProductCode,
-		Time: time,
-		Side: "BUY",
-		Price: price,
-		Size: size,
+		Side:        "BUY",
+		Price:       price,
+		Size:        size,
 	}
 	if save {
 		signalEvent.Save()
@@ -126,16 +117,17 @@ func (s *SignalEvents) Buy(ProductCode string, time time.Time, price, size float
 	return true
 }
 
+// Sell is 売却シグナルをデータ保存
 func (s *SignalEvents) Sell(ProductCode string, time time.Time, price, size float64, save bool) bool {
-	if !s.CanSell(time){
+	if !s.CanSell(time) {
 		return false
 	}
 	signalEvent := SignalEvent{
 		ProductCode: ProductCode,
-		Time: time,
-		Side: "SELL",
-		Price: price,
-		Size: size,
+		Time:        time,
+		Side:        "SELL",
+		Price:       price,
+		Size:        size,
 	}
 	if save {
 		signalEvent.Save()
@@ -144,6 +136,7 @@ func (s *SignalEvents) Sell(ProductCode string, time time.Time, price, size floa
 	return true
 }
 
+// Profit is 利益確定
 func (s *SignalEvents) Profit() float64 {
 	total := 0.0
 	beforeSell := 0.0
@@ -168,13 +161,14 @@ func (s *SignalEvents) Profit() float64 {
 	return total
 }
 
+// MarchalJSON is シグナルと利益をjsonにする
 func (s SignalEvents) MarchalJSON() ([]byte, error) {
 	value, err := json.Marshal(&struct {
 		Signals []SignalEvent `json:"signals,omitempty"`
-		Profit float64 `json:"profit,omitempty"`
+		Profit  float64       `json:"profit,omitempty"`
 	}{
 		Signals: s.Signals,
-		Profit: s.Profit(),
+		Profit:  s.Profit(),
 	})
 	if err != nil {
 		return nil, err
@@ -182,7 +176,8 @@ func (s SignalEvents) MarchalJSON() ([]byte, error) {
 	return value, err
 }
 
-func (s *SignalEvents) CollectAfter (time time.Time) *SignalEvents {
+// CollectAfter is バックテスト時の時間がCandleの時間よりあとであること
+func (s *SignalEvents) CollectAfter(time time.Time) *SignalEvents {
 	for i, signal := range s.Signals {
 		if time.After(signal.Time) {
 			continue

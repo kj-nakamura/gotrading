@@ -2,6 +2,7 @@ package models
 
 import (
 	"gotrading/config"
+	"log"
 	"sort"
 	"time"
 
@@ -239,6 +240,7 @@ func (df *DataFrameCandle) BackTestEma(period1, period2 int) *SignalEvents {
 			signalEvents.Sell(df.ProductCode, df.Candles[i].Time, df.Candles[i].Close, 1.0, false)
 		}
 	}
+	log.Println(signalEvents)
 	return signalEvents
 }
 
@@ -458,11 +460,13 @@ type TradeParams struct {
 }
 
 type Ranking struct {
-	Enable	bool
+	Enable      bool
 	Performance float64
 }
 
+// OptimizeParams is 成績の良い指標をランキング化して、上位のみをトレードに使用する
 func (df *DataFrameCandle) OptimizeParams() *TradeParams {
+	// 指標を最適化する期間などを指定
 	emaPerformance, emaPeriod1, emaPeriod2 := df.OptimizeEma()
 	bbPerformance, bbN, bbK := df.OptimizeBb()
 	macdPerformance, macdFastPeriod, macdSlowPeriod, macdSignalPeriod := df.OptimizeMacd()
@@ -476,7 +480,7 @@ func (df *DataFrameCandle) OptimizeParams() *TradeParams {
 	rsiRanking := &Ranking{false, rsiPerformance}
 
 	rankings := []*Ranking{emaRanking, bbRanking, macdRanking, ichimokuRanking, rsiRanking}
-	sort.Slice(rankings, func(i, j int) bool { return rankings[i].Performance > rankings[j].Performance})
+	sort.Slice(rankings, func(i, j int) bool { return rankings[i].Performance > rankings[j].Performance })
 
 	isEnable := false
 	for i, ranking := range rankings {
