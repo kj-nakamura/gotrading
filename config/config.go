@@ -42,6 +42,7 @@ func init() {
 		"1s": time.Second,
 		"1m": time.Minute,
 		"1h": time.Hour,
+		"1d": 24 * time.Hour,
 	}
 
 	Config = ConfigList{
