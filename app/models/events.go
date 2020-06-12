@@ -15,13 +15,15 @@ type SignalEvent struct {
 }
 
 func (s *SignalEvent) Save() bool {
-	DbConnection.Table(tableNameSignalEvents).Update(map[string]interface{}{
-		"Time":         s.Time,
-		"product_code": s.ProductCode,
-		"Side":         s.Side,
-		"Price":        s.Price,
-		"Size":         s.Size,
-	})
+	var event = Event{
+		Time:        s.Time,
+		ProductCode: s.ProductCode,
+		Side:        s.Side,
+		Price:       s.Price,
+		Size:        s.Size,
+	}
+	DbConnection.Table(tableNameSignalEvents).Create(&event)
+
 	return true
 }
 
@@ -179,6 +181,7 @@ func (s SignalEvents) MarchalJSON() ([]byte, error) {
 // CollectAfter is バックテスト時の時間がCandleの時間よりあとであること
 func (s *SignalEvents) CollectAfter(time time.Time) *SignalEvents {
 	for i, signal := range s.Signals {
+		// df.Candle[0].timeがsignal.Timeより後ならtrue
 		if time.After(signal.Time) {
 			continue
 		}

@@ -94,7 +94,10 @@ func GetAllCandle(productCode string, duration time.Duration, limit int) (dfCand
 	tableName := GetCandleTableName(productCode, duration)
 
 	// descでlimit数レコードを取得し、ascに並べ替える
-	rows, err := DbConnection.Table(tableName).Select([]string{"time", "open", "close", "high", "low", "volume"}).Order("time desc").Limit(limit).Order("time asc").Rows()
+	cmd := DbConnection.Table(tableName).Select([]string{"time", "open", "close", "high", "low", "volume"}).Order("time desc").Limit(limit).SubQuery()
+
+	rows, err := DbConnection.Raw("SELECT * FROM ? AS cmd ORDER BY time ASC;", cmd).Rows()
+
 	if err != nil {
 		return
 	}

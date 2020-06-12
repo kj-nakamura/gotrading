@@ -27,7 +27,7 @@ func GetCandleTableName(productCode string, duration time.Duration) string {
 // Event is table of events for buy or sell
 type Event struct {
 	gorm.Model
-	Time        *time.Time `gorm:"primary_key: not null"`
+	Time        time.Time `gorm:"primary_key: not null"`
 	ProductCode string
 	Side        string
 	Price       float64

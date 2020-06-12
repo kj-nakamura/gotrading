@@ -2,7 +2,6 @@ package models
 
 import (
 	"gotrading/config"
-	"log"
 	"sort"
 	"time"
 
@@ -218,6 +217,7 @@ func (df *DataFrameCandle) AddEvents(timeTime time.Time) bool {
 	return false
 }
 
+// BackTestEma is 指定した期間で、買い、売りのタイミングを返す
 func (df *DataFrameCandle) BackTestEma(period1, period2 int) *SignalEvents {
 	lenCandles := len(df.Candles)
 	if lenCandles <= period1 || lenCandles <= period2 {
@@ -233,17 +233,17 @@ func (df *DataFrameCandle) BackTestEma(period1, period2 int) *SignalEvents {
 		}
 
 		if emaValue1[i-1] < emaValue2[i-1] && emaValue1[i] >= emaValue2[i] {
-			signalEvents.Buy(df.ProductCode, df.Candles[i].Time, df.Candles[i].Close, 1.0, false)
+			signalEvents.Buy(df.ProductCode, df.Candles[i].Time, df.Candles[i].Close, 1.0, true)
 		}
 
 		if emaValue1[i-1] > emaValue2[i-1] && emaValue1[i] <= emaValue2[i] {
-			signalEvents.Sell(df.ProductCode, df.Candles[i].Time, df.Candles[i].Close, 1.0, false)
+			signalEvents.Sell(df.ProductCode, df.Candles[i].Time, df.Candles[i].Close, 1.0, true)
 		}
 	}
-	log.Println(signalEvents)
 	return signalEvents
 }
 
+// OptimizeEma is 一定期間内での最高益と期間を取得
 func (df *DataFrameCandle) OptimizeEma() (performance float64, bestPeriod1 int, bestPeriod2 int) {
 	bestPeriod1 = 7
 	bestPeriod2 = 14

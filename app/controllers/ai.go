@@ -17,7 +17,7 @@ import (
 )
 
 const (
-	ApiFeePercent = 0.12
+	APIFeePercent = 0.0012
 )
 
 type AI struct {
@@ -83,9 +83,12 @@ func (ai *AI) UpdateOptimizeParams(isContinue bool) {
 	}
 }
 
+// Buy is バックテストなら保存しない。本番はAIに基づいて購入
 func (ai *AI) Buy(candle models.Candle) (childOrderAcceptanceID string, isOrderCompleted bool) {
 	if ai.BackTest {
+		// TODO
 		couldBuy := ai.SignalEvents.Buy(ai.ProductCode, candle.Time, candle.Close, 1.0, false)
+
 		return "", couldBuy
 	}
 	if ai.StartTrade.After(candle.Time) {
@@ -112,12 +115,13 @@ func (ai *AI) Buy(candle models.Candle) (childOrderAcceptanceID string, isOrderC
 		MinuteToExpires: ai.MinuteToExpires,
 		TimeInForce:     "GTC",
 	}
-	log.Print("status=order candle=%+v order=%+v", candle, order)
+	log.Printf("status=order candle=%+v order=%+v", candle, order)
 	resp, err := ai.API.SendOrder(order)
 	if err != nil {
 		log.Println(err)
 		return
 	}
+	childOrderAcceptanceID = resp.ChildOrderAcceptanceID
 	if resp.ChildOrderAcceptanceID == "" {
 		log.Printf("order=%+v status=no_id", order)
 		return
@@ -136,7 +140,7 @@ func (ai *AI) Sell(candle models.Candle) (childOrderAcceptanceID string, isOrder
 	if ai.StartTrade.After(candle.Time) {
 		return
 	}
-	if !ai.SignalEvents.CanBuy(candle.Time) {
+	if !ai.SignalEvents.CanSell(candle.Time) {
 		return
 	}
 
@@ -151,7 +155,7 @@ func (ai *AI) Sell(candle models.Candle) (childOrderAcceptanceID string, isOrder
 		MinuteToExpires: ai.MinuteToExpires,
 		TimeInForce:     "GTC",
 	}
-	log.Print("status=order candle=%+v order=%+v", candle, order)
+	log.Print("status=sell candle=%+v order=%+v", candle, order)
 	resp, err := ai.API.SendOrder(order)
 	if err != nil {
 		log.Println(err)
@@ -305,7 +309,7 @@ func (ai *AI) GetAvailableBalance() (availableCurrency, availableCoin float64) {
 }
 
 func (ai *AI) AdjustSize(size float64) float64 {
-	fee := size * ApiFeePercent
+	fee := size * APIFeePercent
 	size = size - fee
 	return math.Floor(size*10000) / 10000
 }
@@ -335,14 +339,14 @@ func (ai *AI) WaitUntilOrderComplete(childOrderAcceptanceID string, executeTime 
 					if order.Side == "BUY" {
 						couldBuy := ai.SignalEvents.Buy(ai.ProductCode, executeTime, order.AveragePrice, order.Size, true)
 						if !couldBuy {
-							log.Printf("status=buy chilsOrderAcceptanceID=%s order=%+v", childOrderAcceptanceID, order)
+							log.Printf("status=buy childOrderAcceptanceID=%s order=%+v", childOrderAcceptanceID, order)
 						}
 						return couldBuy
 					}
 					if order.Side == "SELL" {
 						couldSell := ai.SignalEvents.Sell(ai.ProductCode, executeTime, order.AveragePrice, order.Size, true)
 						if !couldSell {
-							log.Printf("status=sell chilsOrderAcceptanceID=%s order=%+v", childOrderAcceptanceID, order)
+							log.Printf("status=sell childOrderAcceptanceID=%s order=%+v", childOrderAcceptanceID, order)
 						}
 						return couldSell
 					}
