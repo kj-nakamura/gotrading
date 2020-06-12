@@ -8,9 +8,10 @@ import (
 	"gopkg.in/ini.v1"
 )
 
+// ConfigList is Configファイルからデータ取得(config.ini)
 type ConfigList struct {
-	ApiKey      string
-	ApiSecret   string
+	APIKey      string
+	APISecret   string
 	LogFile     string
 	ProductCode string
 
@@ -39,15 +40,15 @@ func init() {
 	}
 
 	durations := map[string]time.Duration{
-		"1s": time.Second,
+		// "1s": time.Second,
 		"1m": time.Minute,
 		"1h": time.Hour,
 		"1d": 24 * time.Hour,
 	}
 
 	Config = ConfigList{
-		ApiKey:    cfg.Section("bitflyer").Key("api_key").String(),
-		ApiSecret: cfg.Section("bitflyer").Key("api_secret").String(),
+		APIKey:    cfg.Section("bitflyer").Key("api_key").String(),
+		APISecret: cfg.Section("bitflyer").Key("api_secret").String(),
 
 		LogFile:     cfg.Section("gotrading").Key("log_file").String(),
 		ProductCode: cfg.Section("gotrading").Key("product_code").String(),

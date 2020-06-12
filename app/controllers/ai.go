@@ -17,9 +17,11 @@ import (
 )
 
 const (
+	// APIFeePercent is 売買時の手数料
 	APIFeePercent = 0.0012
 )
 
+// AI is トレードの指標を決定するためのデータ
 type AI struct {
 	API                  *bitflyer.APIClient
 	ProductCode          string
@@ -39,10 +41,11 @@ type AI struct {
 }
 
 // TODO mutex, singleton
+// Ai AIをグローバル化
 var Ai *AI
 
 func NewAI(productCode string, duration time.Duration, pastPeriod int, UsePercent, stopLimitPercent float64, backTest bool) *AI {
-	apiClient := bitflyer.New(config.Config.ApiKey, config.Config.ApiSecret)
+	apiClient := bitflyer.New(config.Config.APIKey, config.Config.APISecret)
 	var signalEvents *models.SignalEvents
 	if backTest {
 		signalEvents = models.NewSignalEvents()
