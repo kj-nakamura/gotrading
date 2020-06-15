@@ -157,6 +157,7 @@ func (s *SignalEvents) Profit() float64 {
 			beforeSell = total
 		}
 	}
+	// 売られるまでは利益確定しない
 	if isHolding == true {
 		return beforeSell
 	}
