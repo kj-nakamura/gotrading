@@ -14,6 +14,7 @@ type ConfigList struct {
 	APISecret   string
 	LogFile     string
 	ProductCode string
+	Deadline    int
 
 	TradeDuration time.Duration
 	Durations     map[string]time.Duration
@@ -52,6 +53,7 @@ func init() {
 
 		LogFile:     cfg.Section("gotrading").Key("log_file").String(),
 		ProductCode: cfg.Section("gotrading").Key("product_code").String(),
+		Deadline:    cfg.Section("gotrading").Key("deadline").MustInt(),
 
 		Durations:     durations,
 		TradeDuration: durations[cfg.Section("gotrading").Key("trade_duration").String()],

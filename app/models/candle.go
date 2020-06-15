@@ -3,6 +3,7 @@ package models
 import (
 	"fmt"
 	"gotrading/bitflyer"
+	"gotrading/config"
 	"time"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -89,7 +90,7 @@ func CreateCandleWithDuration(ticker bitflyer.Ticker, productCode string, durati
 	currentCandle.Save()
 
 	t := time.Now()
-	t = t.Add(time.Duration(-24) * time.Hour)
+	t = t.Add(time.Duration(-config.Config.Deadline) * time.Minute)
 
 	DeleteCandleWithDuration(productCode, duration, t)
 
