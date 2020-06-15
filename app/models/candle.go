@@ -87,7 +87,20 @@ func CreateCandleWithDuration(ticker bitflyer.Ticker, productCode string, durati
 	currentCandle.Volume += ticker.Volume
 	currentCandle.Close = price
 	currentCandle.Save()
+
+	t := time.Now()
+	t = t.Add(time.Duration(-24) * time.Hour)
+
+	DeleteCandleWithDuration(productCode, duration, t)
+
 	return false
+}
+
+func DeleteCandleWithDuration(productCode string, duration time.Duration, deadline time.Time) bool {
+	tableName := GetCandleTableName(productCode, duration)
+	DbConnection.Table(tableName).Unscoped().Where("time < ?", deadline).Delete(Duration{})
+
+	return true
 }
 
 func GetAllCandle(productCode string, duration time.Duration, limit int) (dfCandle *DataFrameCandle, err error) {
