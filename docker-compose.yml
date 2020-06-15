@@ -5,7 +5,6 @@ services:
     build: . # ビルドに使用するDockerfileがあるディレクトリ指定
     ports:
       - "8080"
-      # - "8080:8080"
     depends_on:
       - mysql
     tty: true # コンテナの起動永続化
