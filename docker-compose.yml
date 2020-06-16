@@ -19,9 +19,6 @@ services:
   mysql:
     image: mysql:5.7.22
     environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_USER: kenji
-      MYSQL_PASSWORD: tama0413
       MYSQL_DATABASE: trading
     ports:
       - "3306:3306"
