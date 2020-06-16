@@ -4,12 +4,12 @@ jobs:
   build:
     docker:
       - image: golang:latest
-      - image: mysql:5.7
-        environment:
-          MYSQL_ROOT_PASSWORD: ${MYSQL_PASSWORD}
-          MYSQL_USER: ${MYSQL_USER}
-          MYSQL_PASSWORD: ${MYSQL_PASSWORD}
-          MYSQL_DATABASE: trading
+      # - image: mysql:5.7
+      #   environment:
+      #     MYSQL_ROOT_PASSWORD: ${MYSQL_PASSWORD}
+      #     MYSQL_USER: ${MYSQL_USER}
+      #     MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      #     MYSQL_DATABASE: trading
     working_directory: ~/repo
     steps:
       - checkout
@@ -66,7 +66,7 @@ jobs:
           command: |
             aws ecs describe-task-definition --task-definition go-service | jq '.taskDefinition | { containerDefinitions: .containerDefinitions }' > definition.json
             aws ecs register-task-definition --family go-service --cli-input-json file://definition.json
-            aws ecs update-service --cluster sample-ecs-cluster --service go-service --task-definition go-service
+            aws ecs update-service --cluster trading-ecs-cluster --service go-service --task-definition go-service
 workflows:
   version: 2
   test:
