@@ -9,7 +9,7 @@ services:
       - mysql
     tty: true # コンテナの起動永続化
     volumes:
-      - ./gotrading:/go/src/gotrading # マウントディレクトリ指定
+      - ./:/go/src/gotrading # マウントディレクトリ指定
   nginx:
     build: ./nginx
     ports:
@@ -19,6 +19,7 @@ services:
   mysql:
     image: mysql:5.7.22
     environment:
+      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
       MYSQL_DATABASE: trading
     ports:
       - "3306:3306"

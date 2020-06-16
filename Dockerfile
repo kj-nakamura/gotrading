@@ -5,7 +5,7 @@ RUN mkdir /go/src/gotrading
 # コンテナログイン時のディレクトリ指定
 WORKDIR /go/src/gotrading
 # ホストのファイルをコンテナの作業ディレクトリに移行
-ADD ./gotrading /go/src/gotrading
+ADD ./ /go/src/gotrading
 
 RUN go get github.com/go-sql-driver/mysql
 RUN go get -u github.com/jinzhu/gorm
