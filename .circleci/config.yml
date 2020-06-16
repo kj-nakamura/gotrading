@@ -64,9 +64,9 @@ jobs:
       - run:
           name: deploy
           command: |
-            aws ecs describe-task-definition --task-definition trading-service | jq '.taskDefinition | { containerDefinitions: .containerDefinitions }' > definition.json
-            aws ecs register-task-definition --family trading-service --cli-input-json file://definition.json
-            aws ecs update-service --cluster sample-ecs-cluster --service trading-service --task-definition trading-service
+            aws ecs describe-task-definition --task-definition go-service | jq '.taskDefinition | { containerDefinitions: .containerDefinitions }' > definition.json
+            aws ecs register-task-definition --family go-service --cli-input-json file://definition.json
+            aws ecs update-service --cluster sample-ecs-cluster --service go-service --task-definition go-service
 workflows:
   version: 2
   test:
