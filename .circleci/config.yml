@@ -23,13 +23,6 @@ jobs:
       - run:
           name: Decode config file
           command: echo $CONFIG | base64 --decode > config.ini
-      # - run: go get -u github.com/jinzhu/gorm
-      # - run: go get github.com/gorilla/websocket
-      # - run: go get github.com/markcheno/go-talib
-      # - run: go get golang.org/x/sync/semaphore
-      # - run: go get gopkg.in/ini.v1
-      # - run: go get github.com/go-sql-driver/mysql
-      # - run: exit 0
   build_image:
     docker:
       - image: docker:18.09.0
@@ -71,13 +64,9 @@ jobs:
       - run:
           name: deploy
           command: |
-            aws ecs describe-task-definition --task-definition rails-service | jq '.taskDefinition | { containerDefinitions: .containerDefinitions }' > definition.json
-            aws ecs register-task-definition --family rails-service --cli-input-json file://definition.json
-            aws ecs update-service --cluster sample-ecs-cluster --service rails-service --task-definition rails-service
-      - run:
-          name: migration
-          command: |
-            aws ecs run-task --cluster sample-ecs-cluster --task-definition rails-migrate
+            aws ecs describe-task-definition --task-definition trading-service | jq '.taskDefinition | { containerDefinitions: .containerDefinitions }' > definition.json
+            aws ecs register-task-definition --family trading-service --cli-input-json file://definition.json
+            aws ecs update-service --cluster sample-ecs-cluster --service trading-service --task-definition trading-service
 workflows:
   version: 2
   test:
