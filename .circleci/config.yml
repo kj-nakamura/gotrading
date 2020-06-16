@@ -3,8 +3,13 @@ version: 2
 jobs:
   build:
     docker:
-      - image: circleci/golang:1.8
-      - image: circleci/mysql:5.7
+      - image: golang:latest
+      - image: mysql:5.7
+        environment:
+          MYSQL_ROOT_PASSWORD: ${MYSQL_PASSWORD}
+          MYSQL_USER: ${MYSQL_USER}
+          MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+          MYSQL_DATABASE: trading
     working_directory: ~/repo
     steps:
       - checkout
@@ -15,6 +20,9 @@ jobs:
           key: v1-pkg-cache
           paths:
             - "/go/pkg"
+      - run:
+          name: Decode config file
+          command: echo $CONFIG | base64 --decode > config.ini
       - run: go get -u github.com/jinzhu/gorm
       - run: go get github.com/gorilla/websocket
       - run: go get github.com/markcheno/go-talib
