@@ -4,6 +4,7 @@ jobs:
   build:
     docker:
       - image: circleci/golang:latest
+      - image: circleci/mysql:5.7
     working_directory: ~/repo
     steps:
       - checkout
