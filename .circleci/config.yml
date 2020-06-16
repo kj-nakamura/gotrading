@@ -4,13 +4,7 @@ jobs:
   build:
     docker:
       - image: circleci/golang:1.8
-      - image: mysql:5.7
-        environment:
-          MYSQL_ALLOW_EMPTY_PASSWORD: yes
-          MYSQL_ROOT_PASSWORD: ""
-          MYSQL_DATABASE: trading
-          MYSQL_USER: ${MYSQL_USER}
-          MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      - image: circleci/mysql:5.7
     working_directory: ~/repo
     steps:
       - checkout
@@ -21,12 +15,12 @@ jobs:
           key: v1-pkg-cache
           paths:
             - "/go/pkg"
-      - run: go get github.com/go-sql-driver/mysql
       - run: go get -u github.com/jinzhu/gorm
       - run: go get github.com/gorilla/websocket
       - run: go get github.com/markcheno/go-talib
       - run: go get golang.org/x/sync/semaphore
       - run: go get gopkg.in/ini.v1
+      - run: go get github.com/go-sql-driver/mysql
       - run: exit 0
   build_image:
     docker:
