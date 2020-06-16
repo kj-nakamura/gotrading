@@ -1,0 +1,92 @@
+version: 2
+
+jobs:
+  build:
+    docker:
+      - image: circleci/golang:1.8
+      - image: mysql:5.7
+        environment:
+          MYSQL_USER: root
+          MYSQL_ALLOW_EMPTY_PASSWORD: yes
+    working_directory: ~/repo
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - v1-pkg-cache
+      - save_cache:
+          key: v1-pkg-cache
+          paths:
+            - "/go/pkg"
+      - run: go get github.com/go-sql-driver/mysql
+      - run: go get -u github.com/jinzhu/gorm
+      - run: go get github.com/gorilla/websocket
+      - run: go get github.com/markcheno/go-talib
+      - run: go get golang.org/x/sync/semaphore
+      - run: go get gopkg.in/ini.v1
+      - run: exit 0
+  build_image:
+    docker:
+      - image: docker:18.09.0
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: install aws cli
+          command: |
+            apk add --no-cache --update py-pip
+            pip install awscli
+      - run:
+          name: build image
+          command: |
+            $(aws ecr get-login --no-include-email --region ap-northeast-1)
+            docker build -t ${ECR_DOMAIN}/trading-image:$CIRCLE_SHA1 -t ${ECR_DOMAIN}/trading-image:latest .
+      - run:
+          name: Push docker image
+          command: |
+            docker push ${ECR_DOMAIN}/trading-image:$CIRCLE_SHA1 
+            docker push ${ECR_DOMAIN}/trading-image:latest
+  deploy:
+    docker:
+      - image: circleci/python:3.7
+    steps:
+      - run:
+          name: install aws cli
+          command: |
+            sudo pip install awscli
+      - run:
+          name: download jq
+          command: |
+            wget https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64
+            mv jq-linux64 jq
+      - run:
+          name: login
+          command: |
+            $(aws ecr get-login --no-include-email --region ap-northeast-1)
+      - run:
+          name: deploy
+          command: |
+            aws ecs describe-task-definition --task-definition rails-service | jq '.taskDefinition | { containerDefinitions: .containerDefinitions }' > definition.json
+            aws ecs register-task-definition --family rails-service --cli-input-json file://definition.json
+            aws ecs update-service --cluster sample-ecs-cluster --service rails-service --task-definition rails-service
+      - run:
+          name: migration
+          command: |
+            aws ecs run-task --cluster sample-ecs-cluster --task-definition rails-migrate
+workflows:
+  version: 2
+  test:
+    jobs:
+      - build
+      - build_image:
+          requires:
+            - build
+          filters:
+            branches:
+              only: master
+      - deploy:
+          requires:
+            - build_image
+          filters:
+            branches:
+              only: master
