@@ -110,4 +110,4 @@ workflows:
           aws-region: AWS_DEFAULT_REGION
           family: "go-service"
           cluster-name: "${AWS_RESOURCE_NAME_PREFIX}-ecs-cluster"
-          container-image-name-updates: "container=go-service,tag=${CIRCLE_SHA1}"
+          container-image-name-updates: "container=trading-go,tag=${CIRCLE_SHA1}"
