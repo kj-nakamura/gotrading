@@ -13,7 +13,7 @@ jobs:
       - checkout
       - run:
           name: Wait for db
-          command: dockerize -wait tcp://localhost:3306 -timeout 1m -wait-retry-interval 5s
+          command: dockerize -wait tcp://127.0.0.1:3306 -timeout 120s
       - restore_cache:
           keys:
             - v1-pkg-cache
