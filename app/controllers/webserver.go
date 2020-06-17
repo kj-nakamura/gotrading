@@ -27,6 +27,11 @@ type JSONError struct {
 	Code  int    `json:"code"`
 }
 
+type HealthCheck struct {
+	Status int
+	Result string
+}
+
 func APIError(w http.ResponseWriter, errMessage string, code int) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(code)
@@ -203,9 +208,23 @@ func apiCandleHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write(js)
 }
 
+func healthCheckHandler(w http.ResponseWriter, r *http.Request) {
+	ping := HealthCheck{http.StatusOK, "ok"}
+
+	res, err := json.Marshal(ping)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(res)
+}
+
 func StartWebServer() error {
 	http.HandleFunc("/api/candle/", apiMakeHandler(apiCandleHandler))
-	// http.HandleFunc("/chart/", viewChartHandler)
+	http.HandleFunc("/health-check/", healthCheckHandler)
 	http.HandleFunc("/", viewChartHandler)
 
 	return http.ListenAndServe(fmt.Sprintf(":%d", config.Config.Port), nil)
