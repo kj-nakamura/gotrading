@@ -23,7 +23,7 @@ jobs:
           command: echo $CONFIG | base64 --decode > config.ini
       - run:
           name: ls
-          command: ls
+          command: make build
       # DB起動待ち
       # - run:
       #     name: Wait for db
