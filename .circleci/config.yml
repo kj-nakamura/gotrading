@@ -101,7 +101,7 @@ workflows:
     jobs:
       - aws-ecr/build-and-push-image:
           account-url: ECR_DOMAIN
-          repo: "${AWS_RESOURCE_NAME_PREFIX}"
+          repo: "${AWS_RESOURCE_NAME_PREFIX}-image"
           region: AWS_DEFAULT_REGION
           tag: "${CIRCLE_SHA1}"
       - aws-ecs/deploy-service-update:
