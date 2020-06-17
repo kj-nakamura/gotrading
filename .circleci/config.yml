@@ -2,54 +2,87 @@ version: 2
 
 jobs:
   build:
-    machine: true
+    docker:
+      - image: circleci/golang:latest
+      # - image: circleci/mysql:5.7
+      #   environment:
+      #     MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+      #     MYSQL_DATABASE: trading
     working_directory: ~/repo
     steps:
       - checkout
-
+      - restore_cache:
+          keys:
+            - v1-pkg-cache
+      - save_cache:
+          key: v1-pkg-cache
+          paths:
+            - "/go/pkg"
+      - run:
+          name: Decode config file
+          command: echo $CONFIG | base64 --decode > config.ini
+      # DB起動待ち
+      # - run:
+      #     name: Wait for db
+      #     command: dockerize -wait tcp://127.0.0.1:3306 -timeout 120s
+  build_image:
+    docker:
+      - image: docker:18.09.0
+    steps:
+      - checkout
       - setup_remote_docker
-
       - run:
-          name: Install Docker client
+          name: install aws cli
           command: |
-            set -x
-            VER="17.03.0-ce"
-            curl -L -o /tmp/docker-$VER.tgz https://get.docker.com/builds/Linux/x86_64/docker-$VER.tgz
-            tar -xz -C /tmp -f /tmp/docker-$VER.tgz
-            mv /tmp/docker/* /usr/bin
-
+            apk add --no-cache --update py-pip
+            pip install awscli
       - run:
-          name: Install Docker Compose
+          name: build image
           command: |
-            set -x
-            curl -L https://github.com/docker/compose/releases/download/1.11.2/docker-compose-`uname -s`-`uname -m` > /usr/local/bin/docker-compose
-            chmod +x /usr/local/bin/docker-compose
-
+            $(aws ecr get-login --no-include-email --region ap-northeast-1)
+            docker build -t ${ECR_DOMAIN}/trading-image:$CIRCLE_SHA1 -t ${ECR_DOMAIN}/trading-image:latest .
       - run:
-          name: Build service
-          command: make
-
-      - run:
-          name: Start container and verify it's working
+          name: Push docker image
           command: |
-            set -x
-            docker-compose up -d
-
+            docker push ${ECR_DOMAIN}/trading-image:$CIRCLE_SHA1
+            docker push ${ECR_DOMAIN}/trading-image:latest
+  deploy:
+    docker:
+      - image: circleci/python:3.7
+    steps:
       - run:
-          name: test
+          name: install aws cli
           command: |
-            mkdir /tmp/test-results
-            docker-compose run go test -run ''
+            sudo pip install awscli
       - run:
-          name: docker-compose stop
+          name: download jq
           command: |
-            set -x
-            docker-compose stop
+            wget https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64
+            mv jq-linux64 jq
       - run:
-          name: docker-compose down
-          command: docker-compose down
-      - store_test_results:
-          path: /tmp/test-results
-      - store_artifacts:
-          path: /tmp/test-results
-          destination: test-results
+          name: login
+          command: |
+            $(aws ecr get-login --no-include-email --region ap-northeast-1)
+      - run:
+          name: deploy
+          command: |
+            aws ecs describe-task-definition --task-definition go-service | jq '.taskDefinition | { containerDefinitions: .containerDefinitions }' > definition.json
+            aws ecs register-task-definition --family go-service --cli-input-json file://definition.json
+            aws ecs update-service --cluster trading-ecs-cluster --service go-service --task-definition go-service
+workflows:
+  version: 2
+  test:
+    jobs:
+      - build
+      - build_image:
+          requires:
+            - build
+          filters:
+            branches:
+              only: master
+      - deploy:
+          requires:
+            - build_image
+          filters:
+            branches:
+              only: master
