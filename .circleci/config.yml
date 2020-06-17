@@ -8,7 +8,7 @@ jobs:
       #   environment:
       #     MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
       #     MYSQL_DATABASE: trading
-    working_directory: /go/src/
+    working_directory: /go/src/gotrading
     steps:
       - checkout
       - restore_cache:
