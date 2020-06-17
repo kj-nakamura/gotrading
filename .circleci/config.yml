@@ -1,80 +1,80 @@
 version: 2.1
 
-jobs:
-  build:
-    docker:
-      - image: circleci/golang:latest
-      # - image: circleci/mysql:5.7
-      #   environment:
-      #     MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
-      #     MYSQL_DATABASE: trading
-    working_directory: /go/src/gotrading
-    steps:
-      - checkout
-      - restore_cache:
-          keys:
-            - v1-pkg-cache
-      - save_cache:
-          key: v1-pkg-cache
-          paths:
-            - "/go/pkg"
-      - run:
-          name: Decode config file
-          command: echo $CONFIG | base64 --decode > config.ini
-      # - run:
-      #     name: setup
-      #     command: make setup
-      # - run:
-      #     name: build
-      #     command: make build
-      # DB起動待ち
-      # - run:
-      #     name: Wait for db
-      #     command: dockerize -wait tcp://127.0.0.1:3306 -timeout 120s
-  # build_image:
-  #   docker:
-  #     - image: docker:18.09.0
-  #   steps:
-  #     - checkout
-  #     - setup_remote_docker
-  #     - run:
-  #         name: install aws cli
-  #         command: |
-  #           apk add --no-cache --update py-pip
-  #           pip install awscli
-  #     - run:
-  #         name: build image
-  #         command: |
-  #           $(aws ecr get-login --no-include-email --region ap-northeast-1)
-  #           docker build -t ${ECR_DOMAIN}/trading-image:$CIRCLE_SHA1 -t ${ECR_DOMAIN}/trading-image:latest .
-  #     - run:
-  #         name: Push docker image
-  #         command: |
-  #           docker push ${ECR_DOMAIN}/trading-image:$CIRCLE_SHA1
-  #           docker push ${ECR_DOMAIN}/trading-image:latest
-  # deploy:
-  #   docker:
-  #     - image: circleci/python:3.7
-  #   steps:
-  #     - run:
-  #         name: install aws cli
-  #         command: |
-  #           sudo pip install awscli
-  #     - run:
-  #         name: download jq
-  #         command: |
-  #           wget https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64
-  #           mv jq-linux64 jq
-  #     - run:
-  #         name: login
-  #         command: |
-  #           $(aws ecr get-login --no-include-email --region ap-northeast-1)
-  #     - run:
-  #         name: deploy
-  #         command: |
-  #           aws ecs describe-task-definition --task-definition go-service | jq '.taskDefinition | { containerDefinitions: .containerDefinitions }' > definition.json
-  #           aws ecs register-task-definition --family go-service --cli-input-json file://definition.json
-  #           aws ecs update-service --cluster trading-ecs-cluster --service go-service --task-definition go-service
+# jobs:
+#   build:
+#     docker:
+#       - image: circleci/golang:latest
+#       # - image: circleci/mysql:5.7
+#       #   environment:
+#       #     MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+#       #     MYSQL_DATABASE: trading
+#     working_directory: /go/src/gotrading
+#     steps:
+#       - checkout
+#       - restore_cache:
+#           keys:
+#             - v1-pkg-cache
+#       - save_cache:
+#           key: v1-pkg-cache
+#           paths:
+#             - "/go/pkg"
+#       - run:
+#           name: Decode config file
+#           command: echo $CONFIG | base64 --decode > config.ini
+# - run:
+#     name: setup
+#     command: make setup
+# - run:
+#     name: build
+#     command: make build
+# DB起動待ち
+# - run:
+#     name: Wait for db
+#     command: dockerize -wait tcp://127.0.0.1:3306 -timeout 120s
+# build_image:
+#   docker:
+#     - image: docker:18.09.0
+#   steps:
+#     - checkout
+#     - setup_remote_docker
+#     - run:
+#         name: install aws cli
+#         command: |
+#           apk add --no-cache --update py-pip
+#           pip install awscli
+#     - run:
+#         name: build image
+#         command: |
+#           $(aws ecr get-login --no-include-email --region ap-northeast-1)
+#           docker build -t ${ECR_DOMAIN}/trading-image:$CIRCLE_SHA1 -t ${ECR_DOMAIN}/trading-image:latest .
+#     - run:
+#         name: Push docker image
+#         command: |
+#           docker push ${ECR_DOMAIN}/trading-image:$CIRCLE_SHA1
+#           docker push ${ECR_DOMAIN}/trading-image:latest
+# deploy:
+#   docker:
+#     - image: circleci/python:3.7
+#   steps:
+#     - run:
+#         name: install aws cli
+#         command: |
+#           sudo pip install awscli
+#     - run:
+#         name: download jq
+#         command: |
+#           wget https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64
+#           mv jq-linux64 jq
+#     - run:
+#         name: login
+#         command: |
+#           $(aws ecr get-login --no-include-email --region ap-northeast-1)
+#     - run:
+#         name: deploy
+#         command: |
+#           aws ecs describe-task-definition --task-definition go-service | jq '.taskDefinition | { containerDefinitions: .containerDefinitions }' > definition.json
+#           aws ecs register-task-definition --family go-service --cli-input-json file://definition.json
+#           aws ecs update-service --cluster trading-ecs-cluster --service go-service --task-definition go-service
 # workflows:
 #   version: 2
 #   test:
