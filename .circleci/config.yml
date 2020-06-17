@@ -11,9 +11,6 @@ jobs:
     working_directory: ~/repo
     steps:
       - checkout
-      - run:
-          name: Wait for db
-          command: dockerize -wait tcp://127.0.0.1:3306 -timeout 120s
       - restore_cache:
           keys:
             - v1-pkg-cache
@@ -24,6 +21,9 @@ jobs:
       - run:
           name: Decode config file
           command: echo $CONFIG | base64 --decode > config.ini
+      - run:
+          name: Wait for db
+          command: dockerize -wait tcp://127.0.0.1:3306 -timeout 120s
   build_image:
     docker:
       - image: docker:18.09.0
