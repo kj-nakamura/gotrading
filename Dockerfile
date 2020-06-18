@@ -1,5 +1,7 @@
 # ベースとなるDockerイメージ指定
-FROM golang:latest
+FROM golang:alpine
+
+ENV GOPATH /go
 # コンテナ内に作業ディレクトリを作成
 RUN mkdir /go/src/gotrading
 # コンテナログイン時のディレクトリ指定
@@ -13,6 +15,6 @@ RUN go get github.com/gorilla/websocket
 RUN go get github.com/markcheno/go-talib
 RUN go get golang.org/x/sync/semaphore
 RUN go get gopkg.in/ini.v1
-RUN GOOS=linux GOARCH=amd64 go build
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo -o main main.go
 
 EXPOSE 8080
