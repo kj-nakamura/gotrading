@@ -15,7 +15,7 @@ ADD ./ /go/src/gotrading
 # RUN go get github.com/markcheno/go-talib
 # RUN go get golang.org/x/sync/semaphore
 # RUN go get gopkg.in/ini.v1
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-w -s" -o /go/src/gotrading
+# RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-w -s" -o /go/src/gotrading
 
 EXPOSE 8080
 
