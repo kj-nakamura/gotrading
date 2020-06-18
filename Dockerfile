@@ -1,5 +1,5 @@
 # ベースとなるDockerイメージ指定
-FROM golang:latest
+FROM circleci/golang:1.9.7
 
 ENV GOPATH /go
 # コンテナ内に作業ディレクトリを作成
