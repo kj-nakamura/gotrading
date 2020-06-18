@@ -36,5 +36,5 @@ func healthCheckHandler(w http.ResponseWriter, r *http.Request) {
 func StartWebServer() error {
 	http.HandleFunc("/health-check/", healthCheckHandler)
 
-	return http.ListenAndServe(fmt.Sprintf(":%d", 8080), nil)
+	return http.ListenAndServe(fmt.Sprintf(":%d", 8090), nil)
 }

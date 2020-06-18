@@ -1,5 +1,5 @@
 # ベースとなるDockerイメージ指定
-FROM circleci/golang:1.9.7
+FROM golang:1.14
 
 ENV GOPATH /go
 # コンテナ内に作業ディレクトリを作成
@@ -15,8 +15,8 @@ ADD ./ /go/src/gotrading
 # RUN go get github.com/markcheno/go-talib
 # RUN go get golang.org/x/sync/semaphore
 # RUN go get gopkg.in/ini.v1
-# RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-w -s" -o /go/src/gotrading
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-w -s" -o /go/src/gotrading
 
-EXPOSE 8080
+EXPOSE 8090
 
-# ENTRYPOINT ["/go/bin/app"]
+# CMD ["go run main.go"]
