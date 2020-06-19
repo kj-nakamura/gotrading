@@ -1,16 +1,22 @@
 version: 2.1
 
-# jobs:
-#   build:
-#     docker:
-#       - image: circleci/golang:latest
-#       # - image: circleci/mysql:5.7
-#       #   environment:
-#       #     MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
-#       #     MYSQL_DATABASE: trading
-#     working_directory: /go/src/gotrading
+# build:
+#     machine: 
+#       image: circleci/classic:edge
+#     working_directory: ~/repo
 #     steps:
 #       - checkout
+#       - run:
+#         name: Docker Compose をインストール
+#         command: |
+#           curl -L https://github.com/docker/compose/releases/download/1.19.0/docker-compose-`uname -s`-`uname -m` > ~/docker-compose
+#           chmod +x ~/docker-compose
+#           sudo mv ~/docker-compose /usr/local/bin/docker-compose
+#       - run:
+#           name: docker-compose up
+#           command: |
+#             set -x
+#             docker-compose up -d --build
 #       - restore_cache:
 #           keys:
 #             - v1-pkg-cache
@@ -97,17 +103,38 @@ orbs:
   aws-ecr: circleci/aws-ecr@6.5.0
   aws-ecs: circleci/aws-ecs@0.0.10
 workflows:
-  build-and-deploy:
+  app-build-and-deploy:
     jobs:
       - aws-ecr/build-and-push-image:
           account-url: ECR_DOMAIN
+          dockerfile: ./Dockerfile
           repo: "${AWS_RESOURCE_NAME_PREFIX}-image"
           region: AWS_DEFAULT_REGION
           tag: "${CIRCLE_SHA1}"
+          filters:
+            branches:
+              only: master
       - aws-ecs/deploy-service-update:
           requires:
             - aws-ecr/build-and-push-image
           aws-region: AWS_DEFAULT_REGION
           family: "go-service"
           cluster-name: "${AWS_RESOURCE_NAME_PREFIX}-ecs-cluster"
-          container-image-name-updates: "container=trading-go,tag=${CIRCLE_SHA1}"
+          container-image-name-updates: "container=app,tag=${CIRCLE_SHA1}"
+  nginx-build-and-deploy:
+    jobs:
+      - aws-ecr/build-and-push-image:
+          account-url: ECR_DOMAIN
+          dockerfile: ./nginx/Dockerfile
+          repo: nginx
+          region: AWS_DEFAULT_REGION
+          tag: "${CIRCLE_SHA1}"
+          filters:
+            branches:
+              only: master
+      - aws-ecs/deploy-service-update:
+          requires:
+            - aws-ecr/build-and-push-image
+          family: 'go-service'
+          cluster-name: "${AWS_RESOURCE_NAME_PREFIX}-ecs-cluster"
+          container-image-name-updates: "container=nginx,tag=${CIRCLE_SHA1}"

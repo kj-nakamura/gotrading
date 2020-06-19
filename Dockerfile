@@ -2,6 +2,7 @@
 FROM golang:1.14
 
 ENV GOPATH /go
+ENV CGO_ENABLED 0
 # コンテナ内に作業ディレクトリを作成
 RUN mkdir /go/src/gotrading
 # コンテナログイン時のディレクトリ指定
@@ -15,7 +16,9 @@ RUN go get github.com/gorilla/websocket
 RUN go get github.com/markcheno/go-talib
 RUN go get golang.org/x/sync/semaphore
 RUN go get gopkg.in/ini.v1
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-w -s" -o /go/src/gotrading
+
+# ENTRYPOINT ["make", "build"]
+# ENTRYPOINT [ "CGO_ENABLED=0", "GOOS=linux", "GOARCH=amd64", "go", "build", "-ldflags='-w -s'"]
 
 EXPOSE 8090
 
