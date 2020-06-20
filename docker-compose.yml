@@ -10,6 +10,8 @@ services:
     tty: true # コンテナの起動永続化
     volumes:
       - ./:/go/src/gotrading # マウントディレクトリ指定
+    environment:
+      TZ: Asia/Tokyo
     # command: |
     #   "./gotrading"
   nginx:
