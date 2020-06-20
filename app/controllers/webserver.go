@@ -1,19 +1,43 @@
 package controllers
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"gotrading/app/models"
 	"html/template"
 	"log"
+	"net"
 	"net/http"
+	"os"
 	"regexp"
 	"strconv"
+	"syscall"
 
 	"gotrading/config"
+
+	"golang.org/x/sys/unix"
 )
 
 var templates = template.Must(template.ParseFiles("app/views/chart.html"))
+
+func init() {
+	pidFilePath := "server1.pid"
+	if err := os.Remove(pidFilePath); err != nil {
+		if !os.IsNotExist(err) {
+			panic(err)
+		}
+	}
+	pidf, err := os.OpenFile(pidFilePath, os.O_EXCL|os.O_CREATE|os.O_WRONLY, 0666)
+
+	if err != nil {
+		panic(err)
+	}
+	if _, err := fmt.Fprint(pidf, syscall.Getpid()); err != nil {
+		panic(err)
+	}
+	pidf.Close()
+}
 
 func viewChartHandler(w http.ResponseWriter, r *http.Request) {
 	err := templates.ExecuteTemplate(w, "chart.html", nil)
@@ -222,10 +246,31 @@ func healthCheckHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write(res)
 }
 
-func StartWebServer() error {
-	http.HandleFunc("/api/candle/", apiMakeHandler(apiCandleHandler))
-	http.HandleFunc("/health-check/", healthCheckHandler)
-	http.HandleFunc("/", viewChartHandler)
+func listenCtrl(network string, address string, c syscall.RawConn) error {
+	var err error
+	c.Control(func(s uintptr) {
+		err = unix.SetsockoptInt(int(s), unix.SOL_SOCKET, unix.SO_REUSEPORT, 1) // portをbindできる設定
+		if err != nil {
+			return
+		}
+	})
+	return err
+}
 
-	return http.ListenAndServe(fmt.Sprintf(":%d", config.Config.Port), nil)
+func StartWebServer() error {
+	handler := http.NewServeMux()
+	handler.HandleFunc("/api/candle/", apiMakeHandler(apiCandleHandler))
+	handler.HandleFunc("/health-check/", healthCheckHandler)
+	handler.HandleFunc("/", viewChartHandler)
+
+	lc := net.ListenConfig{
+		Control: listenCtrl, //portのbindを許可する設定を入れる
+	}
+
+	listener, err := lc.Listen(context.Background(), "tcp4", fmt.Sprintf(":%d", config.Config.Port))
+	if err != nil {
+		panic(err)
+	}
+
+	return http.Serve(listener, handler)
 }
