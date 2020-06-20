@@ -116,6 +116,7 @@ func (s *SignalEvents) Buy(ProductCode string, time time.Time, price, size float
 		signalEvent.Save()
 	}
 	s.Signals = append(s.Signals, signalEvent)
+
 	return true
 }
 
@@ -164,7 +165,7 @@ func (s *SignalEvents) Profit() float64 {
 	return total
 }
 
-// MarchalJSON is シグナルと利益をjsonにする
+// MarchalJSON is シグナルと利益を結合してjsonにする
 func (s SignalEvents) MarchalJSON() ([]byte, error) {
 	value, err := json.Marshal(&struct {
 		Signals []SignalEvent `json:"signals,omitempty"`
@@ -182,7 +183,7 @@ func (s SignalEvents) MarchalJSON() ([]byte, error) {
 // CollectAfter is バックテスト時の時間がCandleの時間よりあとであること
 func (s *SignalEvents) CollectAfter(time time.Time) *SignalEvents {
 	for i, signal := range s.Signals {
-		// df.Candle[0].timeがsignal.Timeより後ならtrue
+		// df.Candle[0].timeがsignal.Timeより後ならcontinue
 		if time.After(signal.Time) {
 			continue
 		}

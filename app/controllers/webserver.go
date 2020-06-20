@@ -84,6 +84,7 @@ func apiCandleHandler(w http.ResponseWriter, r *http.Request) {
 		APIError(w, "No product_code param", http.StatusBadRequest)
 		return
 	}
+
 	strLimit := r.URL.Query().Get("limit")
 	limit, err := strconv.Atoi(strLimit)
 	if strLimit == "" || err != nil || limit < 0 || limit > 1000 {
@@ -224,10 +225,12 @@ func apiCandleHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	// Profitを追加してjson出力
 	js, err := json.Marshal(df)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
+
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(js)
 }

@@ -102,6 +102,7 @@ func (ai *AI) Buy(candle models.Candle) (childOrderAcceptanceID string, isOrderC
 	}
 
 	availableCurrency, _ := ai.GetAvailableBalance()
+	// 購入に使える金額(持っている金額 - 決めたパーセント)
 	useCurrency := availableCurrency * ai.UsePercent
 	ticker, err := ai.API.GetTicker(ai.ProductCode)
 	if err != nil {
@@ -119,11 +120,15 @@ func (ai *AI) Buy(candle models.Candle) (childOrderAcceptanceID string, isOrderC
 		TimeInForce:     "GTC",
 	}
 	log.Printf("status=order candle=%+v order=%+v", candle, order)
+
+	// 購入実行
 	resp, err := ai.API.SendOrder(order)
 	if err != nil {
 		log.Println(err)
 		return
 	}
+
+	// 注文ID発行
 	childOrderAcceptanceID = resp.ChildOrderAcceptanceID
 	if resp.ChildOrderAcceptanceID == "" {
 		log.Printf("order=%+v status=no_id", order)
@@ -131,7 +136,9 @@ func (ai *AI) Buy(candle models.Candle) (childOrderAcceptanceID string, isOrderC
 	}
 	childOrderAcceptanceID = resp.ChildOrderAcceptanceID
 
+	// 注文完了
 	isOrderCompleted = ai.WaitUntilOrderComplete(childOrderAcceptanceID, candle.Time)
+
 	return childOrderAcceptanceID, isOrderCompleted
 }
 
