@@ -5,3 +5,5 @@ config.ini
 gotrading
 main
 .vscode/
+nohup.out
+server1.pid
