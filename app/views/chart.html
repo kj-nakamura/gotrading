@@ -860,6 +860,7 @@
           }
           send();
         });
+
         $("#inputRsiPeriod").change(function () {
           config.rsi.period = this.value;
           send();
@@ -874,14 +875,17 @@
           }
           send();
         });
+
         $("#inputMacdPeriod1").change(function () {
           config.macd.periods[0] = this.value;
           send();
         });
+
         $("#inputMacdPeriod2").change(function () {
           config.macd.periods[1] = this.value;
           send();
         });
+
         $("#inputMacdPeriod3").change(function () {
           config.macd.periods[2] = this.value;
           send();
@@ -896,14 +900,17 @@
           }
           send();
         });
+
         $("#inputHvPeriod1").change(function () {
           config.hv.periods[0] = this.value;
           send();
         });
+
         $("#inputHvPeriod2").change(function () {
           config.hv.periods[1] = this.value;
           send();
         });
+
         $("#inputHvPeriod3").change(function () {
           config.hv.periods[2] = this.value;
           send();
@@ -913,36 +920,31 @@
   </head>
   <body>
     <div>
-      <!-- <button onclick="changeDuration('1s');">1s</button> -->
       <button onclick="changeDuration('1m');">1m</button>
       <button onclick="changeDuration('1h');">1h</button>
     </div>
 
     <div>
-      SMA <input id="inputSma" type="checkbox" /> Period<input
-        id="inputSmaPeriod1"
-        type="text"
-        value="7"
-        style="width: 15px;"
-      />
+      SMA <input id="inputSma" type="checkbox" /> 
+      Period
+      <input id="inputSmaPeriod1" type="text" value="7" style="width: 15px;" />
       <input id="inputSmaPeriod2" type="text" value="14" style="width: 15px;" />
       <input id="inputSmaPeriod3" type="text" value="50" style="width: 15px;" />
     </div>
 
     <div>
-      EMA <input id="inputEma" type="checkbox" /> Period<input
-        id="inputEmaPeriod1"
-        type="text"
-        value="7"
-        style="width: 15px;"
-      />
+      EMA <input id="inputEma" type="checkbox" /> 
+      Period
+      <input id="inputEmaPeriod1" type="text" value="7" style="width: 15px;" />
       <input id="inputEmaPeriod2" type="text" value="14" style="width: 15px;" />
       <input id="inputEmaPeriod3" type="text" value="50" style="width: 15px;" />
     </div>
 
     <div>
-      BBands <input id="inputBBands" type="checkbox" /> N
-      <input id="inputBBandsN" type="text" value="20" style="width: 15px;" /> K
+      BBands <input id="inputBBands" type="checkbox" /> 
+      N
+      <input id="inputBBandsN" type="text" value="20" style="width: 15px;" /> 
+      K
       <input id="inputBBandsK" type="text" value="2" style="width: 15px;" />
     </div>
 
@@ -951,33 +953,23 @@
     <div>Volume <input id="inputVolume" type="checkbox" /></div>
 
     <div>
-      Rsi <input id="inputRsi" type="checkbox" /> Period
+      Rsi <input id="inputRsi" type="checkbox" /> 
+      Period
       <input id="inputRsiPeriod" type="text" value="14" style="width: 15px;" />
     </div>
 
     <div>
-      MACD <input id="inputMacd" type="checkbox" /> Period<input
-        id="inputMacdPeriod1"
-        type="text"
-        value="12"
-        style="width: 15px;"
-      />
-      <input
-        id="inputMacdPeriod2"
-        type="text"
-        value="26"
-        style="width: 15px;"
-      />
+      MACD <input id="inputMacd" type="checkbox" /> 
+      Period
+      <input id="inputMacdPeriod1" type="text" value="12" style="width: 15px;" />
+      <input id="inputMacdPeriod2" type="text" value="26" style="width: 15px;" />
       <input id="inputMacdPeriod3" type="text" value="9" style="width: 15px;" />
     </div>
 
     <div>
-      HV <input id="inputHv" type="checkbox" /> Period<input
-        id="inputHvPeriod1"
-        type="text"
-        value="21"
-        style="width: 15px;"
-      />
+      HV <input id="inputHv" type="checkbox" /> 
+      Period
+      <input id="inputHvPeriod1" type="text" value="21" style="width: 15px;" />
       <input id="inputHvPeriod2" type="text" value="63" style="width: 15px;" />
       <input id="inputHvPeriod3" type="text" value="252" style="width: 15px;" />
     </div>
