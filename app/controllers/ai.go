@@ -289,6 +289,7 @@ func (ai *AI) Trade() {
 			if !isOrderCompleted {
 				continue
 			}
+			// 損切りする割合
 			ai.StopLimit = df.Candles[i].Close * ai.StopLimitPercent
 		}
 
