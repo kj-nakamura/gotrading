@@ -235,6 +235,7 @@ func apiCandleHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write(js)
 }
 
+// healthCheckHandler is ALBによるヘルスチェック用
 func healthCheckHandler(w http.ResponseWriter, r *http.Request) {
 	ping := HealthCheck{http.StatusOK, "ok"}
 

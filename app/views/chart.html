@@ -544,8 +544,9 @@
             dataTable.addColumn({ type: "string", role: "annotation" });
 
             if (data["events"]["profit"] != undefined) {
+              // console.log(data["events"]);
               profit =
-                "$" + String(Math.round(data["events"]["profit"] * 100) / 100);
+                "¥" + String(Math.round(data["events"]["profit"] * 100) / 100);
               $("#profit").html("Change:" + profit);
             }
           }
