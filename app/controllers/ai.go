@@ -45,7 +45,7 @@ type AI struct {
 var Ai *AI
 
 func NewAI(productCode string, duration time.Duration, pastPeriod int, UsePercent, stopLimitPercent float64, backTest bool) *AI {
-	apiClient := bitflyer.New(config.Config.APIKey, config.Config.APISecret)
+	apiClient := bitflyer.New(config.Config.ApiKey, config.Config.ApiSecret)
 	var signalEvents *models.SignalEvents
 	if backTest {
 		signalEvents = models.NewSignalEvents()

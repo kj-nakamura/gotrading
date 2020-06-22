@@ -2,73 +2,44 @@ package config
 
 import (
 	"log"
-	"os"
 	"time"
 
-	"gopkg.in/ini.v1"
+	"github.com/kelseyhightower/envconfig"
 )
 
-// ConfigList is Configファイルからデータ取得(config.ini)
-type ConfigList struct {
-	APIKey      string
-	APISecret   string
-	LogFile     string
-	ProductCode string
-	Deadline    int
-
-	TradeDuration time.Duration
-	Durations     map[string]time.Duration
-	DbName        string
-	UserName      string
-	Password      string
-	SQLDriver     string
-	Port          int
-
-	BackTest         bool
-	UsePercent       float64
-	DataLimit        int
-	StopLimitPercent float64
-	NumRanking       int
+type EnvConfig struct {
+	ApiKey           string        `required:"true" split_words:"true"`
+	ApiSecret        string        `required:"true" split_words:"true"`
+	LogFile          string        `required:"true" split_words:"true"`
+	ProductCode      string        `required:"true" split_words:"true"`
+	TradeDuration    time.Duration `required:"true" split_words:"true"`
+	BackTest         bool          `required:"true" split_words:"true"`
+	UsePercent       float64       `required:"true" split_words:"true"`
+	DataLimit        int           `required:"true" split_words:"true"`
+	StopLimitPercent float64       `required:"true" split_words:"true"`
+	NumRanking       int           `required:"true" split_words:"true"`
+	Deadline         int           `required:"true" split_words:"true"`
+	Durations        map[string]time.Duration
+	DbName           string `required:"true" split_words:"true"`
+	DbUserName       string `required:"true" split_words:"true"`
+	DbPassword       string `required:"true" split_words:"true"`
+	SQLDriver        string `required:"true" split_words:"true"`
+	Port             int    `required:"true" split_words:"true"`
 }
 
-var Config ConfigList
+var Config EnvConfig
 
 func init() {
-	cfg, err := ini.Load("config.ini")
-	if err != nil {
-		log.Printf("Failed to read file: %v", err)
-		os.Exit(1)
+	if err := envconfig.Process("", &Config); err != nil {
+		log.Fatalf("[ERROR] Failed to process env: %s", err.Error())
 	}
 
 	durations := map[string]time.Duration{
-		// "1s": time.Second,
 		"1m": time.Minute,
 		"1h": time.Hour,
 		"1d": 24 * time.Hour,
 	}
 
-	Config = ConfigList{
-		APIKey:    cfg.Section("bitflyer").Key("api_key").String(),
-		APISecret: cfg.Section("bitflyer").Key("api_secret").String(),
-
-		LogFile:     cfg.Section("gotrading").Key("log_file").String(),
-		ProductCode: cfg.Section("gotrading").Key("product_code").String(),
-		Deadline:    cfg.Section("gotrading").Key("deadline").MustInt(),
-
-		Durations:     durations,
-		TradeDuration: durations[cfg.Section("gotrading").Key("trade_duration").String()],
-
-		DbName:    cfg.Section("db").Key("name").String(),
-		UserName:  cfg.Section("db").Key("username").String(),
-		Password:  cfg.Section("db").Key("password").String(),
-		SQLDriver: cfg.Section("db").Key("driver").String(),
-
-		Port: cfg.Section("web").Key("port").MustInt(),
-
-		BackTest:         cfg.Section("gotrading").Key("back_test").MustBool(),
-		UsePercent:       cfg.Section("gotrading").Key("use_percent").MustFloat64(),
-		DataLimit:        cfg.Section("gotrading").Key("data_limit").MustInt(),
-		StopLimitPercent: cfg.Section("gotrading").Key("stop_limit_percent").MustFloat64(),
-		NumRanking:       cfg.Section("gotrading").Key("num_ranking").MustInt(),
-	}
+	Config.Durations = durations
+	Config.TradeDuration = durations[Config.TradeDuration.String()]
 }

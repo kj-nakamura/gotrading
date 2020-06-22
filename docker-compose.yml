@@ -13,6 +13,22 @@ services:
       - ./:/go/src/gotrading # マウントディレクトリ指定
     environment:
       TZ: Asia/Tokyo
+      API_KEY: 8cX2CpG9ucpbqGoUA5bLfp
+      API_SECRET: xFNw0UyAGxr2SzeZN4rDGuxE1WA59p9UNThf69KTaKM=
+      LOG_FILE: gotrading.log
+      PRODUCT_CODE: BTC_JPY
+      TRADE_DURATION: 1m
+      BACK_TEST: "true"
+      USE_PERCENT: 0.9
+      DATA_LIMIT: 365
+      STOP_LIMIT_PERCENT: 0.8
+      NUM_RANKING: 2
+      DEADLINE: 3600
+      DB_NAME: trading
+      DB_USER_NAME: kenji
+      DB_PASSWORD: tama0413
+      SQL_DRIVER: mysql
+      PORT: 8090
   nginx:
     build: ./docker/nginx
     container_name: nginx-service
@@ -23,7 +39,9 @@ services:
   mysql:
     build: ./docker/mysql
     environment:
-      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_USER: kenji
+      MYSQL_PASSWORD: tama0413
       MYSQL_DATABASE: trading
     ports:
       - "3306:3306"

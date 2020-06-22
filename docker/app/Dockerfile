@@ -25,5 +25,6 @@ RUN go get github.com/markcheno/go-talib
 RUN go get golang.org/x/sync/semaphore
 RUN go get gopkg.in/ini.v1
 RUN go get golang.org/x/sys/unix 
+RUN go get github.com/kelseyhightower/envconfig
 
 EXPOSE 8090
