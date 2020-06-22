@@ -1,6 +1,14 @@
 # ベースとなるDockerイメージ指定
 FROM golang:1.14
 
+RUN apt-get update -qq && \
+  apt-get install -y apt-utils \
+  build-essential \
+  libpq-dev \
+  nodejs \
+  vim \
+  default-mysql-client 
+
 ENV GOPATH /go
 ENV CGO_ENABLED 0
 # コンテナ内に作業ディレクトリを作成
@@ -18,9 +26,4 @@ RUN go get golang.org/x/sync/semaphore
 RUN go get gopkg.in/ini.v1
 RUN go get golang.org/x/sys/unix 
 
-# ENTRYPOINT ["make", "build"]
-# ENTRYPOINT [ "CGO_ENABLED=0", "GOOS=linux", "GOARCH=amd64", "go", "build", "-ldflags='-w -s'"]
-
 EXPOSE 8090
-
-# CMD ["go run main.go"]

@@ -2,7 +2,8 @@ version: "3" # composeファイルのバーション指定
 
 services:
   app: # service名
-    build: . # ビルドに使用するDockerfileがあるディレクトリ指定
+    build: ./docker/app # ビルドに使用するDockerfileがあるディレクトリ指定
+    container_name: go-service
     ports:
       - "8090"
     depends_on:
@@ -12,16 +13,15 @@ services:
       - ./:/go/src/gotrading # マウントディレクトリ指定
     environment:
       TZ: Asia/Tokyo
-    # command: |
-    #   "./gotrading"
   nginx:
-    build: ./nginx
+    build: ./docker/nginx
+    container_name: nginx-service
     ports:
       - "8080:8080"
     depends_on:
       - "app"
   mysql:
-    image: mysql:5.7.22
+    build: ./docker/mysql
     environment:
       MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
       MYSQL_DATABASE: trading
