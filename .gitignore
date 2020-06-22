@@ -7,3 +7,4 @@ main
 .vscode/
 nohup.out
 server1.pid
+docker-compose.yml
