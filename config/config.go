@@ -21,6 +21,7 @@ type EnvConfig struct {
 	Deadline         int           `required:"true" split_words:"true"`
 	Durations        map[string]time.Duration
 	DbName           string `required:"true" split_words:"true"`
+	DbHost           string `required:"true" split_words:"true" default:"mysql"`
 	DbUserName       string `required:"true" split_words:"true"`
 	DbPassword       string `required:"true" split_words:"true"`
 	SQLDriver        string `required:"true" split_words:"true"`
