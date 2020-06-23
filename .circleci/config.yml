@@ -28,7 +28,7 @@ workflows:
       - aws-ecr/build-and-push-image:
           account-url: ECR_DOMAIN
           dockerfile: ./docker/nginx/Dockerfile
-          repo: nginx
+          repo: nginx-image
           region: AWS_DEFAULT_REGION
           tag: "${CIRCLE_SHA1}"
           filters:
