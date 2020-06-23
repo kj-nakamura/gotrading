@@ -39,6 +39,6 @@ workflows:
           requires:
             - aws-ecr/build-and-push-image
           aws-region: AWS_DEFAULT_REGION
-          family: "nginx-service"
+          family: "go-service"
           cluster-name: "${AWS_RESOURCE_NAME_PREFIX}-ecs-cluster"
           container-image-name-updates: "container=trading-nginx,tag=${CIRCLE_SHA1}"
