@@ -8,7 +8,7 @@ workflows:
     jobs:
       - aws-ecr/build-and-push-image:
           account-url: ECR_DOMAIN
-          dockerfile: ./Dockerfile
+          dockerfile: ./docker/app/Dockerfile
           repo: "${AWS_RESOURCE_NAME_PREFIX}-image"
           region: AWS_DEFAULT_REGION
           tag: "${CIRCLE_SHA1}"
@@ -27,7 +27,7 @@ workflows:
     jobs:
       - aws-ecr/build-and-push-image:
           account-url: ECR_DOMAIN
-          dockerfile: ./nginx/Dockerfile
+          dockerfile: ./docker/nginx/Dockerfile
           repo: nginx
           region: AWS_DEFAULT_REGION
           tag: "${CIRCLE_SHA1}"
