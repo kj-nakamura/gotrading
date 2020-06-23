@@ -22,7 +22,7 @@ workflows:
           family: "go-service"
           cluster-name: "${AWS_RESOURCE_NAME_PREFIX}-ecs-cluster"
           container-image-name-updates: "container=app,tag=${CIRCLE_SHA1}"
-          container-env-var-updates: "container=go-service,name=API_KEY,value=${API_KEY},container=go-service,name=API_SECRET,value=${API_SECRET},container=go-service,name=DB_HOST,value=${DB_HOST},container=go-service,name=API_KEY,value=${API_KEY},container=go-service,name=DB_PASSWORD,value=${DB_PASSWORD}"
+          container-env-var-updates: "container=trading-go,name=API_KEY,value=${API_KEY},container=trading-go,name=API_SECRET,value=${API_SECRET},container=trading-go,name=DB_HOST,value=${DB_HOST},container=trading-go,name=API_KEY,value=${API_KEY},container=trading-go,name=DB_PASSWORD,value=${DB_PASSWORD}"
   nginx-build-and-deploy:
     jobs:
       - aws-ecr/build-and-push-image:
@@ -37,6 +37,7 @@ workflows:
       - aws-ecs/deploy-service-update:
           requires:
             - aws-ecr/build-and-push-image
+          aws-region: AWS_DEFAULT_REGION
           family: "nginx-service"
           cluster-name: "${AWS_RESOURCE_NAME_PREFIX}-ecs-cluster"
-          container-image-name-updates: "container=nginx-service,tag=${CIRCLE_SHA1}"
+          container-image-name-updates: "container=trading-nginx,tag=${CIRCLE_SHA1}"
