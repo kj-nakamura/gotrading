@@ -21,4 +21,4 @@ setup:
 
 build:
 	go build
-	nohup ./gotraning> /dev/null 2>&1 &
+	./gotraning

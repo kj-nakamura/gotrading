@@ -26,5 +26,9 @@ RUN go get golang.org/x/sync/semaphore
 RUN go get gopkg.in/ini.v1
 RUN go get golang.org/x/sys/unix 
 RUN go get github.com/kelseyhightower/envconfig
+RUN go get github.com/aws/aws-sdk-go/aws
+RUN go get github.com/aws/aws-sdk-go/aws/awserr
+RUN go get github.com/aws/aws-sdk-go/aws/session
+RUN go get github.com/aws/aws-sdk-go/service/secretsmanager
 
 EXPOSE 8090
