@@ -20,5 +20,5 @@ setup:
 	go get gopkg.in/ini.v1
 
 build:
-	go build main.go
-	nohup ./main &
+	go build
+	./gotrading
