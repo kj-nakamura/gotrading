@@ -10,10 +10,11 @@ import (
 // StreamIngestionData is データの取得とトレードの開始
 func StreamIngestionData() {
 	c := config.Config
+	e := config.Env
 	ai := NewAI(c.ProductCode, c.TradeDuration, c.DataLimit, c.UsePercent, c.StopLimitPercent, c.BackTest)
 
 	var tickerChannl = make(chan bitflyer.Ticker)
-	apiClient := bitflyer.New(c.ApiKey, c.ApiSecret)
+	apiClient := bitflyer.New(e.ApiKey, e.ApiSecret)
 	go apiClient.GetRealTimeTicker(c.ProductCode, tickerChannl)
 	go func() {
 		for ticker := range tickerChannl {

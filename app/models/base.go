@@ -47,7 +47,7 @@ type Duration struct {
 
 func init() {
 	var err error
-	DbConnection, err = gorm.Open(config.Config.SQLDriver, config.Config.DbUserName+":"+config.Config.DbPassword+"@tcp("+config.Config.DbHost+":3306)/"+config.Config.DbName+"?charset=utf8&parseTime=true&loc=Asia%2FTokyo")
+	DbConnection, err = gorm.Open(config.Config.SQLDriver, config.Env.DbUserName+":"+config.Env.DbPassword+"@tcp("+config.Env.DbHost+":3306)/"+config.Env.DbName+"?charset=utf8&parseTime=true&loc=Asia%2FTokyo")
 	if err != nil {
 		log.Fatalln(err)
 	}

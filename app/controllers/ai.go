@@ -44,8 +44,8 @@ type AI struct {
 // Ai AIをグローバル化
 var Ai *AI
 
-func NewAI(productCode string, duration time.Duration, pastPeriod int, UsePercent, stopLimitPercent float64, backTest bool) *AI {
-	apiClient := bitflyer.New(config.Config.ApiKey, config.Config.ApiSecret)
+func NewAI(productCode string, duration time.Duration, pastPeriod int, UsePercent float64, stopLimitPercent float64, backTest bool) *AI {
+	apiClient := bitflyer.New(config.Env.ApiKey, config.Env.ApiSecret)
 	var signalEvents *models.SignalEvents
 	if backTest {
 		signalEvents = models.NewSignalEvents()
@@ -69,6 +69,7 @@ func NewAI(productCode string, duration time.Duration, pastPeriod int, UsePercen
 		StopLimitPercent: stopLimitPercent,
 	}
 	Ai.UpdateOptimizeParams(false)
+
 	return Ai
 }
 
@@ -129,7 +130,6 @@ func (ai *AI) Buy(candle models.Candle) (childOrderAcceptanceID string, isOrderC
 	}
 
 	// 注文ID発行
-	childOrderAcceptanceID = resp.ChildOrderAcceptanceID
 	if resp.ChildOrderAcceptanceID == "" {
 		log.Printf("order=%+v status=no_id", order)
 		return
