@@ -284,7 +284,7 @@ func (ai *AI) Trade() {
 			}
 		}
 
-		if buyPoint > 0 {
+		if buyPoint > 1 {
 			_, isOrderCompleted := ai.Buy(df.Candles[i])
 			if !isOrderCompleted {
 				continue
