@@ -21,4 +21,4 @@ setup:
 
 build:
 	go build
-	./gotrading
+	nohup ./gotrading &
