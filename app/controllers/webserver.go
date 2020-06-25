@@ -163,6 +163,16 @@ func apiCandleHandler(w http.ResponseWriter, r *http.Request) {
 		df.AddIchimoku()
 	}
 
+	events := r.URL.Query().Get("events")
+	if events != "" {
+		if config.Config.BackTest {
+			df.Events = Ai.SignalEvents.CollectAfter(df.Candles[0].Time)
+		} else {
+			firstTime := df.Candles[0].Time
+			df.AddEvents(firstTime)
+		}
+	}
+
 	rsi := r.URL.Query().Get("rsi")
 	if rsi != "" {
 		strPeriod := r.URL.Query().Get("rsiPeriod")
@@ -213,16 +223,6 @@ func apiCandleHandler(w http.ResponseWriter, r *http.Request) {
 		df.AddHv(period1)
 		df.AddHv(period2)
 		df.AddHv(period3)
-	}
-
-	events := r.URL.Query().Get("events")
-	if events != "" {
-		if config.Config.BackTest {
-			df.Events = Ai.SignalEvents.CollectAfter(df.Candles[0].Time)
-		} else {
-			firstTime := df.Candles[0].Time
-			df.AddEvents(firstTime)
-		}
 	}
 
 	// Profitを追加してjson出力
