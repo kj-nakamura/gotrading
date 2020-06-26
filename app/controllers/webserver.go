@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"gotrading/app/models"
-	"html/template"
 	"log"
 	"net"
 	"net/http"
@@ -16,10 +15,13 @@ import (
 
 	"gotrading/config"
 
+	_ "gotrading/statik"
+
+	"github.com/rakyll/statik/fs"
 	"golang.org/x/sys/unix"
 )
 
-var templates = template.Must(template.ParseFiles("app/views/chart.html"))
+// var templates = template.Must(template.ParseFiles("app/views/chart.html"))
 
 func init() {
 	pidFilePath := "server1.pid"
@@ -39,12 +41,12 @@ func init() {
 	pidf.Close()
 }
 
-func viewChartHandler(w http.ResponseWriter, r *http.Request) {
-	err := templates.ExecuteTemplate(w, "chart.html", nil)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-	}
-}
+// func viewChartHandler(w http.ResponseWriter, r *http.Request) {
+// 	err := templates.ExecuteTemplate(w, "chart.html", nil)
+// 	if err != nil {
+// 		http.Error(w, err.Error(), http.StatusInternalServerError)
+// 	}
+// }
 
 type JSONError struct {
 	Error string `json:"error"`
@@ -262,10 +264,14 @@ func listenCtrl(network string, address string, c syscall.RawConn) error {
 }
 
 func StartWebServer() error {
-	handler := http.NewServeMux()
-	handler.HandleFunc("/api/candle/", apiMakeHandler(apiCandleHandler))
-	handler.HandleFunc("/health-check/", healthCheckHandler)
-	handler.HandleFunc("/", viewChartHandler)
+	statikFs, err := fs.New()
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+	}
+	http.HandleFunc("/api/candle/", apiMakeHandler(apiCandleHandler))
+	http.HandleFunc("/health-check/", healthCheckHandler)
+	http.Handle("/", http.FileServer(statikFs))
+	// handler.HandleFunc("/", viewChartHandler)
 
 	lc := net.ListenConfig{
 		Control: listenCtrl, //portのbindを許可する設定を入れる
@@ -276,5 +282,5 @@ func StartWebServer() error {
 		panic(err)
 	}
 
-	return http.Serve(listener, handler)
+	return http.Serve(listener, nil)
 }

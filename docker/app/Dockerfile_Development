@@ -1,0 +1,6 @@
+# ベースとなるDockerイメージ指定
+FROM golang:1.14.4
+
+WORKDIR /go/src/gotrading
+
+EXPOSE 8090
