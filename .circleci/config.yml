@@ -22,23 +22,23 @@ workflows:
           aws-region: AWS_DEFAULT_REGION
           family: "go-service"
           cluster-name: "${AWS_RESOURCE_NAME_PREFIX}-ecs-cluster"
-          container-image-name-updates: "container=trading-go,tag=${CIRCLE_SHA1}"
+          container-image-name-updates: "container=trading-go,tag=latest"
           container-env-var-updates: "container=trading-go,name=API_KEY,value=${API_KEY},container=trading-go,name=API_SECRET,value=${API_SECRET},container=trading-go,name=DB_HOST,value=${DB_HOST},container=trading-go,name=API_KEY,value=${API_KEY},container=trading-go,name=DB_PASSWORD,value=${DB_PASSWORD}"
-  # nginx-build-and-deploy:
-  #   jobs:
-  #     - aws-ecr/build-and-push-image:
-  #         account-url: ECR_DOMAIN
-  #         dockerfile: ./docker/nginx/Dockerfile
-  #         repo: nginx-image
-  #         region: AWS_DEFAULT_REGION
-  #         tag: "${CIRCLE_SHA1}"
-  #         filters:
-  #           branches:
-  #             only: master
-  #     - aws-ecs/deploy-service-update:
-  #         requires:
-  #           - aws-ecr/build-and-push-image
-  #         aws-region: AWS_DEFAULT_REGION
-  #         family: "go-service"
-  #         cluster-name: "${AWS_RESOURCE_NAME_PREFIX}-ecs-cluster"
-  #         container-image-name-updates: "container=trading-nginx,tag=${CIRCLE_SHA1}"
+  nginx-build-and-deploy:
+    jobs:
+      - aws-ecr/build-and-push-image:
+          account-url: ECR_DOMAIN
+          dockerfile: ./docker/nginx/Dockerfile
+          repo: nginx-image
+          region: AWS_DEFAULT_REGION
+          tag: "${CIRCLE_SHA1}"
+          filters:
+            branches:
+              only: master
+      - aws-ecs/deploy-service-update:
+          requires:
+            - aws-ecr/build-and-push-image
+          aws-region: AWS_DEFAULT_REGION
+          family: "go-service"
+          cluster-name: "${AWS_RESOURCE_NAME_PREFIX}-ecs-cluster"
+          container-image-name-updates: "container=trading-nginx,tag=latest"
