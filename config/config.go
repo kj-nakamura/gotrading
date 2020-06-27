@@ -8,12 +8,13 @@ import (
 )
 
 type EnvValue struct {
-	ApiKey     string `required:"true" split_words:"true"`
-	ApiSecret  string `required:"true" split_words:"true"`
-	DbName     string `required:"true" split_words:"true"`
-	DbHost     string `required:"true" split_words:"true" default:"mysql"`
-	DbUserName string `required:"true" split_words:"true"`
-	DbPassword string `required:"true" split_words:"true"`
+	ApiKey      string `required:"true" split_words:"true"`
+	ApiSecret   string `required:"true" split_words:"true"`
+	DbName      string `required:"true" split_words:"true"`
+	DbHost      string `required:"true" split_words:"true" default:"mysql"`
+	DbUserName  string `required:"true" split_words:"true"`
+	DbPassword  string `required:"true" split_words:"true"`
+	IncomingURL string `split_words:"true"`
 }
 
 type ConfigValue struct {

@@ -7,6 +7,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"gotrading/config"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -17,7 +18,10 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-const baseURL = "https://api.bitflyer.com/v1/"
+const baseURL string = "https://api.bitflyer.com/v1/"
+
+// IncomingURL - Get it from here https://slack.com/services/new/incoming-webhook
+var IncomingURL string = config.Env.IncomingURL
 
 type APIClient struct {
 	key        string
@@ -206,6 +210,40 @@ OUTER:
 	}
 }
 
+// Slack struct - payload parameter of json to post.
+type Slack struct {
+	Text      string `json:"text"`
+	Username  string `json:"username"`
+	IconEmoji string `json:"icon_emoji"`
+	IconURL   string `json:"icon_url"`
+	Channel   string `json:"channel"`
+}
+
+func SlackNortification(is_success bool) {
+	text := ""
+	if is_success {
+		text = "購入に成功しました。"
+	} else {
+		text = "購入に失敗しました。"
+	}
+	params := Slack{
+		Text:      text,
+		Username:  "gotrading",
+		IconEmoji: "",
+		IconURL:   "",
+		Channel:   "",
+	}
+	jsonparams, _ := json.Marshal(params)
+	resp, err := http.PostForm(
+		IncomingURL,
+		url.Values{"payload": {string(jsonparams)}},
+	)
+	if err != nil {
+		log.Println(err)
+	}
+	defer resp.Body.Close()
+}
+
 type Order struct {
 	ID                     int     `json:"id"`
 	ChildOrderAcceptanceID string  `json:"child_order_acceptance_id"`
@@ -243,12 +281,16 @@ func (api *APIClient) SendOrder(order *Order) (*ResponseSendChildOrder, error) {
 	url := "me/sendchildorder"
 	resp, err := api.doRequest("POST", url, map[string]string{}, data)
 	if err != nil {
+		// TODO nortification slack & else
 		return nil, err
 	}
 	var response ResponseSendChildOrder
 	err = json.Unmarshal(resp, &response)
 	if err != nil {
+		SlackNortification(false)
 		return nil, err
+	} else {
+		SlackNortification(true)
 	}
 	return &response, nil
 }
