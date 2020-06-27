@@ -90,7 +90,6 @@ func (ai *AI) UpdateOptimizeParams(isContinue bool) {
 // Buy is バックテストなら保存しない。本番はAIに基づいて購入
 func (ai *AI) Buy(candle models.Candle) (childOrderAcceptanceID string, isOrderCompleted bool) {
 	if ai.BackTest {
-		// TODO
 		couldBuy := ai.SignalEvents.Buy(ai.ProductCode, candle.Time, candle.Close, 1.0, false)
 
 		return "", couldBuy
