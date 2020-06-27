@@ -11,7 +11,7 @@ export GO111MODULE=on
 deps:
 		go get -v -d
 
-# 開発に必用な依存をインストールする
+# 開発に必要な依存をインストールする
 ## Setup
 .PHONY: deps
 devel-deps: deps
