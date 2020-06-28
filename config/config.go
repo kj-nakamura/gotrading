@@ -18,18 +18,19 @@ type EnvValue struct {
 }
 
 type ConfigValue struct {
-	LogFile          string        `required:"true" split_words:"true"`
-	ProductCode      string        `required:"true" split_words:"true"`
-	TradeDuration    time.Duration `required:"true" split_words:"true"`
-	BackTest         bool          `required:"true" split_words:"true"`
-	UsePercent       float64       `required:"true" split_words:"true"`
-	DataLimit        int           `required:"true" split_words:"true"`
-	StopLimitPercent float64       `required:"true" split_words:"true"`
-	NumRanking       int           `required:"true" split_words:"true"`
-	Deadline         int           `required:"true" split_words:"true"`
+	LogFile          string
+	ProductCode      string
+	TradeDuration    time.Duration
+	BackTest         bool
+	UsePercent       float64
+	DataLimit        int
+	StopLimitPercent float64
+	NumRanking       int
+	Deadline         int
+	MaxUseCurrency   float64
 	Durations        map[string]time.Duration
-	SQLDriver        string `required:"true" split_words:"true"`
-	Port             int    `required:"true" split_words:"true"`
+	SQLDriver        string
+	Port             int
 }
 
 var Env EnvValue
@@ -55,6 +56,7 @@ func init() {
 	Config.DataLimit = 365
 	Config.StopLimitPercent = 0.8
 	Config.NumRanking = 2
+	Config.MaxUseCurrency = 100000
 	Config.Deadline = 3600
 	Config.SQLDriver = "mysql"
 	Config.Port = 8090

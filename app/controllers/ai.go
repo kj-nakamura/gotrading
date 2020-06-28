@@ -103,8 +103,13 @@ func (ai *AI) Buy(candle models.Candle) (childOrderAcceptanceID string, isOrderC
 	}
 
 	availableCurrency, _ := ai.GetAvailableBalance()
+
 	// 購入に使える金額(持っている金額 - 決めたパーセント)
-	useCurrency := availableCurrency * ai.UsePercent
+	useCurrency := config.Config.MaxUseCurrency
+	if config.Config.MaxUseCurrency > availableCurrency*ai.UsePercent {
+		useCurrency = availableCurrency * ai.UsePercent
+	}
+
 	ticker, err := ai.API.GetTicker(ai.ProductCode)
 	if err != nil {
 		return
