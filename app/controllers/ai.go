@@ -40,10 +40,10 @@ type AI struct {
 	StartTrade           time.Time
 }
 
-// TODO mutex, singleton
 // Ai AIをグローバル化
 var Ai *AI
 
+// NewAI is 売買履歴を取得
 func NewAI(productCode string, duration time.Duration, pastPeriod int, UsePercent float64, stopLimitPercent float64, backTest bool) *AI {
 	apiClient := bitflyer.New(config.Env.ApiKey, config.Env.ApiSecret)
 	var signalEvents *models.SignalEvents
@@ -73,6 +73,7 @@ func NewAI(productCode string, duration time.Duration, pastPeriod int, UsePercen
 	return Ai
 }
 
+// UpdateOptimizeParams is どの指標を使うかを決定する
 func (ai *AI) UpdateOptimizeParams(isContinue bool) {
 	df, err := models.GetAllCandle(ai.ProductCode, ai.Duration, ai.PastPeriod)
 	if err != nil {
@@ -141,6 +142,7 @@ func (ai *AI) Buy(candle models.Candle) (childOrderAcceptanceID string, isOrderC
 	return childOrderAcceptanceID, isOrderCompleted
 }
 
+// Sell is 売却
 func (ai *AI) Sell(candle models.Candle) (childOrderAcceptanceID string, isOrderCompleted bool) {
 	if ai.BackTest {
 		couldSell := ai.SignalEvents.Sell(ai.ProductCode, candle.Time, candle.Close, 1.0, false)
@@ -164,7 +166,7 @@ func (ai *AI) Sell(candle models.Candle) (childOrderAcceptanceID string, isOrder
 		MinuteToExpires: ai.MinuteToExpires,
 		TimeInForce:     "GTC",
 	}
-	log.Print("status=sell candle=%+v order=%+v", candle, order)
+	log.Printf("status=sell candle=%+v order=%+v", candle, order)
 	resp, err := ai.API.SendOrder(order)
 	if err != nil {
 		log.Println(err)
@@ -297,12 +299,14 @@ func (ai *AI) Trade() {
 			if !isOrderCompleted {
 				continue
 			}
+			// Buyするまで損切りポイントを初期化
 			ai.StopLimit = 0.0
 			ai.UpdateOptimizeParams(true)
 		}
 	}
 }
 
+// GetAvailableBalance is 現在の使える資金を取得
 func (ai *AI) GetAvailableBalance() (availableCurrency, availableCoin float64) {
 	balances, err := ai.API.GetBalance()
 	if err != nil {
@@ -318,12 +322,14 @@ func (ai *AI) GetAvailableBalance() (availableCurrency, availableCoin float64) {
 	return availableCurrency, availableCoin
 }
 
+// AdjustSize is 手数料を差し引いて、端数を切り捨て
 func (ai *AI) AdjustSize(size float64) float64 {
 	fee := size * APIFeePercent
 	size = size - fee
 	return math.Floor(size*10000) / 10000
 }
 
+// WaitUntilOrderComplete is 注文が完了するまで次の注文をしない
 func (ai *AI) WaitUntilOrderComplete(childOrderAcceptanceID string, executeTime time.Time) bool {
 	params := map[string]string{
 		"product_code":              ai.ProductCode,
