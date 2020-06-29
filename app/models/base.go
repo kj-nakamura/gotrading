@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	tableNameSignalEvents = "signal_events"
+	TableNameSignalEvents = "signal_events"
 )
 
 // DbConnection is for using global
@@ -52,7 +52,7 @@ func init() {
 		log.Fatalln(err)
 	}
 
-	DbConnection.Table(tableNameSignalEvents).AutoMigrate(&Event{})
+	DbConnection.Table(TableNameSignalEvents).AutoMigrate(&Event{})
 	for _, duration := range config.Config.Durations {
 		tableName := GetCandleTableName(config.Config.ProductCode, duration)
 		DbConnection.Table(tableName).AutoMigrate(&Duration{})

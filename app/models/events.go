@@ -3,6 +3,7 @@ package models
 import (
 	"encoding/json"
 	"gotrading/config"
+	"log"
 	"time"
 )
 
@@ -22,7 +23,7 @@ func (s *SignalEvent) Save() bool {
 		Price:       s.Price,
 		Size:        s.Size,
 	}
-	DbConnection.Table(tableNameSignalEvents).Create(&event)
+	DbConnection.Table(TableNameSignalEvents).Create(&event)
 
 	return true
 }
@@ -36,7 +37,10 @@ func NewSignalEvents() *SignalEvents {
 }
 
 func GetSignalEventsByCount(loadEvents int) *SignalEvents {
-	rows, err := DbConnection.Table(tableNameSignalEvents).Select([]string{"Time", "ProductCode", "Side", "Price", "Size"}).Where("ProductCode = ?", config.Config.ProductCode).Order("time desc").Limit(loadEvents).Order("time asc").Rows()
+	// descでlimit数レコードを取得し、ascに並べ替える
+	cmd := DbConnection.Table(TableNameSignalEvents).Select([]string{"time", "open", "close", "high", "low", "volume"}).Where("ProductCode = ?", config.Config.ProductCode).Order("time desc").Limit(loadEvents).SubQuery()
+
+	rows, err := DbConnection.Raw("SELECT * FROM ? AS cmd ORDER BY time ASC;", cmd).Rows()
 
 	if err != nil {
 		return nil
@@ -57,7 +61,14 @@ func GetSignalEventsByCount(loadEvents int) *SignalEvents {
 }
 
 func GetSignalEventsAfterTime(timeTime time.Time) *SignalEvents {
-	rows, err := DbConnection.Find(tableNameSignalEvents).Select([]string{"Time", "ProductCode", "Side", "Price", "Size"}).Where("time >= ?", timeTime).Order("time desc").Rows()
+	records := DbConnection.Table(TableNameSignalEvents).Select([]string{"Time", "ProductCode", "Side", "Price", "Size"}).Where("time >= ?", timeTime).Order("time desc")
+
+	if records.RecordNotFound() {
+		log.Println("レコードがありません")
+		return nil
+	}
+
+	rows, err := records.Rows()
 	if err != nil {
 		return nil
 	}
@@ -69,6 +80,12 @@ func GetSignalEventsAfterTime(timeTime time.Time) *SignalEvents {
 		rows.Scan(&signalEvent.Time, &signalEvent.ProductCode, &signalEvent.Side, &signalEvent.Price, &signalEvent.Size)
 		signalEvents.Signals = append(signalEvents.Signals, signalEvent)
 	}
+
+	err = rows.Err()
+	if err != nil {
+		return nil
+	}
+
 	return &signalEvents
 }
 
