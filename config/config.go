@@ -56,7 +56,7 @@ func init() {
 	Config.StopLimitPercent = 0.8
 	Config.NumRanking = 2
 	Config.MaxUseCurrency = 100000
-	Config.Deadline = 3600
+	Config.Deadline = 750
 	Config.SQLDriver = "mysql"
 	Config.Port = 8090
 }

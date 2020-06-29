@@ -90,7 +90,7 @@ func CreateCandleWithDuration(ticker bitflyer.Ticker, productCode string, durati
 	currentCandle.Save()
 
 	t := time.Now()
-	t = t.Add(time.Duration(-config.Config.Deadline) * time.Minute)
+	t = t.Add(time.Duration(-config.Config.Deadline) * time.Hour)
 
 	DeleteCandleWithDuration(productCode, duration, t)
 
