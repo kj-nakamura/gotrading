@@ -11,7 +11,7 @@ import (
 func StreamIngestionData() {
 	c := config.Config
 	e := config.Env
-	ai := NewAI(c.ProductCode, c.TradeDuration, c.DataLimit, c.UsePercent, c.StopLimitPercent, c.BackTest)
+	ai := NewAI(c.ProductCode, c.TradeDuration, c.DataLimit, c.UsePercent, c.StopLimitPercent, e.BackTest)
 
 	var tickerChannl = make(chan bitflyer.Ticker)
 	apiClient := bitflyer.New(e.ApiKey, e.ApiSecret)

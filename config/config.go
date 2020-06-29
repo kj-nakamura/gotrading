@@ -10,6 +10,7 @@ import (
 type EnvValue struct {
 	ApiKey      string `required:"true" split_words:"true"`
 	ApiSecret   string `required:"true" split_words:"true"`
+	BackTest    bool   `required:"true" split_words:"true"`
 	DbName      string `required:"true" split_words:"true"`
 	DbHost      string `required:"true" split_words:"true" default:"mysql"`
 	DbUserName  string `required:"true" split_words:"true"`
@@ -21,7 +22,6 @@ type ConfigValue struct {
 	LogFile          string
 	ProductCode      string
 	TradeDuration    time.Duration
-	BackTest         bool
 	UsePercent       float64
 	DataLimit        int
 	StopLimitPercent float64
@@ -50,8 +50,7 @@ func init() {
 	Config.Durations = durations
 	Config.LogFile = "gotrading.log"
 	Config.ProductCode = "BTC_JPY"
-	Config.TradeDuration = durations["1m"]
-	Config.BackTest = true
+	Config.TradeDuration = durations["1h"]
 	Config.UsePercent = 0.9
 	Config.DataLimit = 365
 	Config.StopLimitPercent = 0.8
