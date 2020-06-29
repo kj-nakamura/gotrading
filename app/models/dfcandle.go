@@ -210,10 +210,15 @@ func (df *DataFrameCandle) AddHv(period int) bool {
 
 func (df *DataFrameCandle) AddEvents(timeTime time.Time) bool {
 	signalEvents := GetSignalEventsAfterTime(timeTime)
+	if signalEvents == nil {
+		return false
+	}
+
 	if len(signalEvents.Signals) > 0 {
 		df.Events = signalEvents
 		return true
 	}
+
 	return false
 }
 
