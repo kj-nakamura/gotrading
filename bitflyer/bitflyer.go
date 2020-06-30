@@ -186,7 +186,8 @@ OUTER:
 		message := new(JsonRPC2)
 		if err := c.ReadJSON(message); err != nil {
 			log.Println("read:", err)
-			return
+			c, _, err = websocket.DefaultDialer.Dial(u.String(), nil)
+			time.Sleep(10 * time.Second)
 		}
 
 		if message.Method == "channelMessage" {
