@@ -219,12 +219,12 @@ type Slack struct {
 	Channel   string `json:"channel"`
 }
 
-func SlackNortification(is_success bool) {
+func SlackNortification(is_success bool, order *Order) {
 	text := ""
 	if is_success {
-		text = "購入に成功しました。"
+		text = fmt.Sprintf("%g　%sに成功しました。", order.Size, order.Side)
 	} else {
-		text = "購入に失敗しました。"
+		text = fmt.Sprintf("%g　%sに失敗しました。", order.Size, order.Side)
 	}
 	params := Slack{
 		Text:      text,
@@ -287,10 +287,10 @@ func (api *APIClient) SendOrder(order *Order) (*ResponseSendChildOrder, error) {
 	var response ResponseSendChildOrder
 	err = json.Unmarshal(resp, &response)
 	if err != nil {
-		SlackNortification(false)
+		SlackNortification(false, order)
 		return nil, err
 	} else {
-		SlackNortification(true)
+		SlackNortification(true, order)
 	}
 	return &response, nil
 }
