@@ -36,14 +36,15 @@ func NewSignalEvents() *SignalEvents {
 	return &SignalEvents{}
 }
 
+// GetSignalEventsByCount is 指定された数のイベントレコードを取得する
 func GetSignalEventsByCount(loadEvents int) *SignalEvents {
 	// descでlimit数レコードを取得し、ascに並べ替える
-	cmd := DbConnection.Table(TableNameSignalEvents).Select([]string{"time", "open", "close", "high", "low", "volume"}).Where("ProductCode = ?", config.Config.ProductCode).Order("time desc").Limit(loadEvents).SubQuery()
+	cmd := DbConnection.Table(TableNameSignalEvents).Select([]string{"Time", "product_code", "Side", "Price", "Size"}).Where("product_code = ?", config.Config.ProductCode).Order("time desc").Limit(loadEvents).SubQuery()
 
 	rows, err := DbConnection.Raw("SELECT * FROM ? AS cmd ORDER BY time ASC;", cmd).Rows()
 
 	if err != nil {
-		return nil
+		log.Fatalln(err)
 	}
 	defer rows.Close()
 
@@ -53,24 +54,20 @@ func GetSignalEventsByCount(loadEvents int) *SignalEvents {
 		rows.Scan(&signalEvent.Time, &signalEvent.ProductCode, &signalEvent.Side, &signalEvent.Price, &signalEvent.Size)
 		signalEvents.Signals = append(signalEvents.Signals, signalEvent)
 	}
-	err = rows.Err()
-	if err != nil {
-		return nil
-	}
+
 	return &signalEvents
 }
 
 func GetSignalEventsAfterTime(timeTime time.Time) *SignalEvents {
-	records := DbConnection.Table(TableNameSignalEvents).Select([]string{"Time", "ProductCode", "Side", "Price", "Size"}).Where("time >= ?", timeTime).Order("time desc")
+	records := DbConnection.Table(TableNameSignalEvents).Select([]string{"Time", "product_code", "Side", "Price", "Size"}).Where("time >= ?", timeTime).Order("time desc")
 
 	if records.RecordNotFound() {
 		log.Println("レコードがありません")
-		return nil
 	}
 
 	rows, err := records.Rows()
 	if err != nil {
-		return nil
+		log.Fatalln(err)
 	}
 	defer rows.Close()
 
@@ -79,11 +76,6 @@ func GetSignalEventsAfterTime(timeTime time.Time) *SignalEvents {
 		var signalEvent SignalEvent
 		rows.Scan(&signalEvent.Time, &signalEvent.ProductCode, &signalEvent.Side, &signalEvent.Price, &signalEvent.Size)
 		signalEvents.Signals = append(signalEvents.Signals, signalEvent)
-	}
-
-	err = rows.Err()
-	if err != nil {
-		return nil
 	}
 
 	return &signalEvents
@@ -107,7 +99,7 @@ func (s *SignalEvents) CanBuy(time time.Time) bool {
 func (s *SignalEvents) CanSell(time time.Time) bool {
 	lenSignals := len(s.Signals)
 	if lenSignals == 0 {
-		return true
+		return false
 	}
 
 	lastSignal := s.Signals[lenSignals-1]
