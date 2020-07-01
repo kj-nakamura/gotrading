@@ -208,6 +208,7 @@ func (df *DataFrameCandle) AddHv(period int) bool {
 	return false
 }
 
+// AddEvents is イベントを取得する
 func (df *DataFrameCandle) AddEvents(timeTime time.Time) bool {
 	signalEvents := GetSignalEventsAfterTime(timeTime)
 	if signalEvents == nil {
