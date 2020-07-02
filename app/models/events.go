@@ -59,7 +59,7 @@ func GetSignalEventsByCount(loadEvents int) *SignalEvents {
 }
 
 func GetSignalEventsAfterTime(timeTime time.Time) *SignalEvents {
-	records := DbConnection.Table(TableNameSignalEvents).Select([]string{"Time", "product_code", "Side", "Price", "Size"}).Where("time >= ?", timeTime).Order("time desc")
+	records := DbConnection.Table(TableNameSignalEvents).Select([]string{"Time", "product_code", "Side", "Price", "Size"}).Where("time >= ?", timeTime).Order("time asc")
 
 	if records.RecordNotFound() {
 		log.Println("レコードがありません")
