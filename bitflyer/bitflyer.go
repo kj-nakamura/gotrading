@@ -187,7 +187,7 @@ OUTER:
 		if err := c.ReadJSON(message); err != nil {
 			log.Println("read:", err)
 			time.Sleep(30 * time.Second)
-			c, _, err = websocket.DefaultDialer.Dial(u.String(), nil)
+			continue
 		}
 
 		if message.Method == "channelMessage" {
