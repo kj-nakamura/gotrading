@@ -50,11 +50,11 @@ func init() {
 	Config.Durations = durations
 	Config.LogFile = "gotrading.log"
 	Config.ProductCode = "BTC_JPY"
-	Config.TradeDuration = durations["1h"]
+	Config.TradeDuration = durations["1m"]
 	Config.UsePercent = 0.9
 	Config.DataLimit = 365
 	Config.StopLimitPercent = 0.8
-	Config.NumRanking = 3
+	Config.NumRanking = 2
 	Config.MaxUseCurrency = 100000
 	Config.Deadline = 750
 	Config.SQLDriver = "mysql"

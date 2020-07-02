@@ -178,11 +178,12 @@ func (ai *AI) Sell(candle models.Candle) (childOrderAcceptanceID string, isOrder
 		return
 	}
 
+	childOrderAcceptanceID = resp.ChildOrderAcceptanceID
+
 	if resp.ChildOrderAcceptanceID == "" {
 		log.Printf("order=%+v status=no_id", order)
 		return
 	}
-	childOrderAcceptanceID = resp.ChildOrderAcceptanceID
 
 	isOrderCompleted = ai.WaitUntilOrderComplete(childOrderAcceptanceID, candle.Time)
 	return childOrderAcceptanceID, isOrderCompleted
