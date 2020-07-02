@@ -22,7 +22,7 @@ func StreamIngestionData() {
 			for _, duration := range c.Durations {
 				isCreated := models.CreateCandleWithDuration(ticker, ticker.ProductCode, duration)
 				if isCreated == true && duration == c.TradeDuration {
-					ai.Trade()
+					go ai.Trade()
 				}
 			}
 		}
