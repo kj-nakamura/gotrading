@@ -18,12 +18,12 @@ import (
 type EnvValue struct {
 	Environment string `required:"true" split_words:"true" default:"dev"`
 	ApiKey      string `required:"true" split_words:"true"`
-	ApiSecret   string `required:"true" split_words:"true"`
+	ApiSecret   string `split_words:"true"`
 	BackTest    bool   `required:"true" split_words:"true"`
 	DbName      string `required:"true" split_words:"true"`
-	DbHost      string `required:"true" split_words:"true" default:"mysql"`
+	DbHost      string `split_words:"true" default:"mysql"`
 	DbUserName  string `required:"true" split_words:"true"`
-	DbPassword  string `required:"true" split_words:"true"`
+	DbPassword  string `split_words:"true"`
 	IncomingURL string `split_words:"true"`
 }
 
@@ -42,13 +42,17 @@ type ConfigValue struct {
 	Port             int
 }
 
+// SecretValue secret managerから取得
 type SecretValue struct {
 	API_SECRET  string
 	DB_PASSWORD string
 	DB_HOST     string
 }
 
+// Env 環境変数から取得
 var Env EnvValue
+
+// Config Project内で使う設定
 var Config ConfigValue
 
 func init() {
@@ -56,14 +60,14 @@ func init() {
 		log.Fatalf("[ERROR] Failed to process env: %s", err.Error())
 	}
 
-	var secret_value SecretValue
-	secret_string := getSecret()
-	json.Unmarshal([]byte(secret_string), &secret_value)
+	var secretValue SecretValue
+	secretStr := getSecret()
+	json.Unmarshal([]byte(secretStr), &secretValue)
 
 	if Env.Environment == "prod" {
-		Env.ApiSecret = secret_value.API_SECRET
-		Env.DbPassword = secret_value.DB_PASSWORD
-		Env.DbHost = secret_value.DB_HOST
+		Env.ApiSecret = secretValue.API_SECRET
+		Env.DbPassword = secretValue.DB_PASSWORD
+		Env.DbHost = secretValue.DB_HOST
 	}
 
 	durations := map[string]time.Duration{
