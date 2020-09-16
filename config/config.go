@@ -1,13 +1,22 @@
 package config
 
 import (
+	"encoding/base64"
+	"encoding/json"
 	"log"
 	"time"
 
+	"fmt"
+
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/awserr"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/secretsmanager"
 	"github.com/kelseyhightower/envconfig"
 )
 
 type EnvValue struct {
+	Environment string `required:"true" split_words:"true" default:"dev"`
 	ApiKey      string `required:"true" split_words:"true"`
 	ApiSecret   string `required:"true" split_words:"true"`
 	BackTest    bool   `required:"true" split_words:"true"`
@@ -33,12 +42,28 @@ type ConfigValue struct {
 	Port             int
 }
 
+type SecretValue struct {
+	API_SECRET  string
+	DB_PASSWORD string
+	DB_HOST     string
+}
+
 var Env EnvValue
 var Config ConfigValue
 
 func init() {
 	if err := envconfig.Process("", &Env); err != nil {
 		log.Fatalf("[ERROR] Failed to process env: %s", err.Error())
+	}
+
+	var secret_value SecretValue
+	secret_string := getSecret()
+	json.Unmarshal([]byte(secret_string), &secret_value)
+
+	if Env.Environment == "prod" {
+		Env.ApiSecret = secret_value.API_SECRET
+		Env.DbPassword = secret_value.DB_PASSWORD
+		Env.DbHost = secret_value.DB_HOST
 	}
 
 	durations := map[string]time.Duration{
@@ -59,4 +84,54 @@ func init() {
 	Config.Deadline = 750
 	Config.SQLDriver = "mysql"
 	Config.Port = 8090
+}
+
+func getSecret() string {
+	secretName := "prod/trading/"
+	region := "ap-northeast-1"
+
+	svc := secretsmanager.New(session.New(), aws.NewConfig().WithRegion(region))
+	input := &secretsmanager.GetSecretValueInput{
+		SecretId:     aws.String(secretName),
+		VersionStage: aws.String("AWSCURRENT"),
+	}
+
+	result, err := svc.GetSecretValue(input)
+	if err != nil {
+		if aerr, ok := err.(awserr.Error); ok {
+			switch aerr.Code() {
+			case secretsmanager.ErrCodeDecryptionFailure:
+				fmt.Println(secretsmanager.ErrCodeDecryptionFailure, aerr.Error())
+			case secretsmanager.ErrCodeInternalServiceError:
+				fmt.Println(secretsmanager.ErrCodeInternalServiceError, aerr.Error())
+			case secretsmanager.ErrCodeInvalidParameterException:
+				fmt.Println(secretsmanager.ErrCodeInvalidParameterException, aerr.Error())
+			case secretsmanager.ErrCodeInvalidRequestException:
+				fmt.Println(secretsmanager.ErrCodeInvalidRequestException, aerr.Error())
+			case secretsmanager.ErrCodeResourceNotFoundException:
+				fmt.Println(secretsmanager.ErrCodeResourceNotFoundException, aerr.Error())
+			}
+		} else {
+			fmt.Println(err.Error())
+		}
+		return err.Error()
+	}
+
+	var secretString, decodedBinarySecret string
+
+	if result.SecretString != nil {
+		secretString = *result.SecretString
+
+		return secretString
+	} else {
+		decodedBinarySecretBytes := make([]byte, base64.StdEncoding.DecodedLen(len(result.SecretBinary)))
+		len, err := base64.StdEncoding.Decode(decodedBinarySecretBytes, result.SecretBinary)
+		if err != nil {
+			fmt.Println("Base64 Decode Error:", err)
+			return "Base64 Decode Error"
+		}
+		decodedBinarySecret = string(decodedBinarySecretBytes[:len])
+
+		return decodedBinarySecret
+	}
 }
