@@ -16,7 +16,7 @@ import (
 )
 
 type EnvValue struct {
-	Environment string `required:"true" split_words:"true" default:"dev"`
+	Env         string `required:"true" split_words:"true" default:"dev"`
 	ApiKey      string `required:"true" split_words:"true"`
 	ApiSecret   string `split_words:"true"`
 	BackTest    bool   `required:"true" split_words:"true"`
@@ -60,63 +60,15 @@ func init() {
 		log.Fatalf("[ERROR] Failed to process env: %s", err.Error())
 	}
 
-	if Env.Environment == "prod" {
+	if Env.Env == "prod" {
 		var secretValue SecretValue
-		secretName := "prod/trading/"
-		region := "ap-northeast-1"
+		secretStr := getSecret()
 
-		svc := secretsmanager.New(session.New(), aws.NewConfig().WithRegion(region))
-		input := &secretsmanager.GetSecretValueInput{
-			SecretId:     aws.String(secretName),
-			VersionStage: aws.String("AWSCURRENT"),
-		}
-
-		result, err := svc.GetSecretValue(input)
-		if err != nil {
-			if aerr, ok := err.(awserr.Error); ok {
-				switch aerr.Code() {
-				case secretsmanager.ErrCodeDecryptionFailure:
-					fmt.Println(secretsmanager.ErrCodeDecryptionFailure, aerr.Error())
-				case secretsmanager.ErrCodeInternalServiceError:
-					fmt.Println(secretsmanager.ErrCodeInternalServiceError, aerr.Error())
-				case secretsmanager.ErrCodeInvalidParameterException:
-					fmt.Println(secretsmanager.ErrCodeInvalidParameterException, aerr.Error())
-				case secretsmanager.ErrCodeInvalidRequestException:
-					fmt.Println(secretsmanager.ErrCodeInvalidRequestException, aerr.Error())
-				case secretsmanager.ErrCodeResourceNotFoundException:
-					fmt.Println(secretsmanager.ErrCodeResourceNotFoundException, aerr.Error())
-				}
-			} else {
-				fmt.Println(err.Error())
-			}
-			// return err.Error()
-		}
-
-		var secretString string
-
-		if result.SecretString != nil {
-			secretString = *result.SecretString
-
-			// return secretString
-		} else {
-			decodedBinarySecretBytes := make([]byte, base64.StdEncoding.DecodedLen(len(result.SecretBinary)))
-			len, err := base64.StdEncoding.Decode(decodedBinarySecretBytes, result.SecretBinary)
-			if err != nil {
-				fmt.Println("Base64 Decode Error:", err)
-				// return "Base64 Decode Error"
-			}
-			secretString = string(decodedBinarySecretBytes[:len])
-
-			// return decodedBinarySecret
-		}
-
-		json.Unmarshal([]byte(secretString), &secretValue)
+		json.Unmarshal([]byte(secretStr), &secretValue)
 		Env.ApiSecret = secretValue.API_SECRET
 		Env.DbPassword = secretValue.DB_PASSWORD
 		Env.DbHost = secretValue.DB_HOST
 	}
-
-	log.Fatalln(Env)
 
 	durations := map[string]time.Duration{
 		"1m": time.Minute,
