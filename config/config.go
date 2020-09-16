@@ -116,6 +116,8 @@ func init() {
 		Env.DbHost = secretValue.DB_HOST
 	}
 
+	log.Fatalln(Env)
+
 	durations := map[string]time.Duration{
 		"1m": time.Minute,
 		"1h": time.Hour,
